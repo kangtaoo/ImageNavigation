@@ -21,7 +21,9 @@ public class MapBasedViewActivity extends FragmentActivity implements OnMapReady
      */
     private static final int CAMERA_BASED_VIEW = 2;
 
-
+    /**
+     * The Google Map object.
+     */
     private GoogleMap mMap;
 
     @Override
