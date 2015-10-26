@@ -20,4 +20,12 @@ public class CameraBasedViewActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
 
+    /**
+     * Stop the camera based view navigator, and go back to the map based.
+     */
+    private void backMapBasedView() {
+        setResult(RESULT_CANCELED);
+        finish();
+    }
+
 }
