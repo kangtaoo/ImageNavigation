@@ -65,4 +65,8 @@ public class MapBasedViewActivity extends FragmentActivity implements OnMapReady
         startActivityForResult(intent, CAMERA_BASED_VIEW);
     }
 
+    /**
+     *
+     */
+
 }
