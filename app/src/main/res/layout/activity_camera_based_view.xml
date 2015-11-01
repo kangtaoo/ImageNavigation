@@ -11,4 +11,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/camera_view"></FrameLayout>
+
+    <ImageButton
+        android:layout_width="80dp"
+        android:layout_height="60dp"
+        android:id="@+id/camera_based_view_showMapView"
+        android:layout_gravity="right|bottom"
+        android:padding="40dp"
+        android:background="@drawable/map_button"
+        android:onClick="onClickMap"
+        />
 </FrameLayout>
