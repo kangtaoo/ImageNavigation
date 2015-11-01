@@ -6,4 +6,7 @@ package com.example.imagingnavigator.function;
  * Router of the navigator.
  */
 public class Router {
+
+
+
 }
