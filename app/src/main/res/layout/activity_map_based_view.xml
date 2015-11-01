@@ -3,4 +3,17 @@
     xmlns:map="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
     android:layout_height="match_parent" android:id="@+id/map"
     tools:context="com.example.imagingnavigator.activities.MapBasedViewActivity"
-    android:name="com.google.android.gms.maps.SupportMapFragment" />
+    android:name="com.google.android.gms.maps.SupportMapFragment" >
+
+    <ImageButton
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/map_based_view_showCameraView"
+        android:layout_gravity="right|bottom"
+        android:padding="40dp"
+        android:background="@drawable/camera_blue"
+        android:onClick="onClickCamera"
+        />
+
+
+</fragment>

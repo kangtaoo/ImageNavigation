@@ -3,6 +3,7 @@ package com.example.imagingnavigator.activities;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import com.example.imagingnavigator.imagingnavigator.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -62,11 +63,15 @@ public class MapBasedViewActivity extends FragmentActivity implements OnMapReady
     private void startCameraBasedView() {
         Intent intent = new Intent();
         intent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
-        startActivityForResult(intent, CAMERA_BASED_VIEW);
+        startActivity(intent);
     }
 
-    /**
-     *
-     */
 
+    /**
+     * Callback function for on-click camera button
+     * Will open camera based view
+     * */
+    public void onClickCamera(View view){
+        startCameraBasedView();
+    }
 }
