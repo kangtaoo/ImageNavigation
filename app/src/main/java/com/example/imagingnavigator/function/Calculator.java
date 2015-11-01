@@ -1,4 +1,4 @@
-package com.example.imagingnavigator.calculator;
+package com.example.imagingnavigator.function;
 
 /**
  * Created by zhangxi on 10/23/15.
