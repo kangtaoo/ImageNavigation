@@ -1,12 +1,9 @@
 package com.example.imagingnavigator.activities;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -55,15 +52,15 @@ public class CameraBasedViewActivity extends Activity {
 
     /**
      * Callback function for on-click map button
-     * Will start map based view
+     * Will start map based router
      * */
-    public void onClickMap(View view){
-        startMapBasedView();
+    public void onClickRouterMap(View view){
+        startMapBasedRouter();
     }
 
-    public void startMapBasedView(){
+    public void startMapBasedRouter(){
         Intent intent = new Intent();
-        intent.setClass(this, MapBasedViewActivity.class);
+        intent.setClass(this, MapBasedRouterActivity.class);
         startActivity(intent);
     }
 

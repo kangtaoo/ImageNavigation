@@ -146,6 +146,11 @@ public class MapBasedViewActivity extends FragmentActivity {
 
         location = locationManager.getLastKnownLocation(bestProvider);
 
+        /**
+         * TODO: Handle the exception when we close GPS service or close network
+         */
+
+
        // System.out.println("latitude:" + location.getLatitude() + ", longitude:" + location.getLongitude());
     }
 
@@ -184,22 +189,22 @@ public class MapBasedViewActivity extends FragmentActivity {
     }
 
 
-
     /**
-     * Start the Camera based navigator.
+     * Start the map based router
      */
-    private void startCameraBasedView() {
+    private void startMapBasedRouter(){
         Intent intent = new Intent();
-        intent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
+        intent.setClass(MapBasedViewActivity.this, MapBasedRouterActivity.class);
         startActivity(intent);
     }
 
 
     /**
-     * Callback function for on-click camera button
-     * Will open camera based view
+     * Callback function for on-click router button
+     * Will open map based router
      * */
-    public void onClickCamera(View view){
-        startCameraBasedView();
+    public void onClickRouter(View view){
+        startMapBasedRouter();
     }
+
 }

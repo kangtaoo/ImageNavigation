@@ -19,6 +19,9 @@
         android:layout_gravity="right|bottom"
         android:padding="40dp"
         android:background="@drawable/map_button"
-        android:onClick="onClickMap"
+        android:onClick="onClickRouterMap"
         />
+
+
+
 </FrameLayout>

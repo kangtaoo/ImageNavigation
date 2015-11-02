@@ -1,7 +1,9 @@
 package com.example.imagingnavigator.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -39,8 +41,42 @@ public class MapBasedRouterActivity extends Activity {
 
         webView.loadUrl("http://maps.google.com/maps?" + "saddr=43.0054446,-87.9678884" + "&daddr=42.9257104,-88.0508355");
 
-
     }
+
+    /**
+     *  Callback function for on-click camera button
+     *  Will open camera based view
+     */
+    public void onClickCamera(View view){
+        startCameraBasedView();
+    }
+
+    /**
+     * Start the Camera based navigator
+     */
+    private void startCameraBasedView(){
+        Intent intent = new Intent();
+        intent.setClass(MapBasedRouterActivity.this, CameraBasedViewActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     *  Callback function for on-click map button
+     *  Will return map based view
+     */
+    public void onClickMap(View view){
+        startMapBasedView();
+    }
+
+    /**
+     * Start the Camera based navigator
+     */
+    private void startMapBasedView(){
+        Intent intent = new Intent();
+        intent.setClass(MapBasedRouterActivity.this,MapBasedViewActivity.class);
+        startActivity(intent);
+    }
+
 
 
 }
