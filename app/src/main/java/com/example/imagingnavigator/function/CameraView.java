@@ -19,7 +19,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
         super(context);
 
         this.camera = camera;
-//        camera.setDisplayOrientation(90);
+        camera.setDisplayOrientation(90);
 
         // get holder and set callback, so that we can get camera data
         holder = getHolder();
