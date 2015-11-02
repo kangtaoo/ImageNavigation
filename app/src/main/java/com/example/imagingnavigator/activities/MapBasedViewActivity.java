@@ -69,6 +69,7 @@ public class MapBasedViewActivity extends FragmentActivity {
 
             return;
         }
+        // set the listener, update the location per 3 seconds(3*1000) automatically or moving more than 8 meters
         locationManager.requestLocationUpdates(bestProvider, 3 * 1000, 8, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -145,7 +146,7 @@ public class MapBasedViewActivity extends FragmentActivity {
 
         location = locationManager.getLastKnownLocation(bestProvider);
 
-        System.out.println("latitude:" + location.getLatitude() + ", longitude:" + location.getLongitude());
+       // System.out.println("latitude:" + location.getLatitude() + ", longitude:" + location.getLongitude());
     }
 
     /**
