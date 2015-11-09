@@ -67,6 +67,17 @@ public class MapBasedViewActivity extends FragmentActivity {
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         updateToCurLocation(location);
 
+        double dLat = 43.0054446;
+        double dLong = -87.9678884;
+
+        if(location!=null){
+            //get the latitude
+            dLat = location.getLatitude();
+            //get the longitude
+            dLong = location.getLongitude();
+        }
+        drawRoute(new LatLng(dLat, dLong), new LatLng(42.9257104d, -88.0508355d), "driving");
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             return;
@@ -101,16 +112,16 @@ public class MapBasedViewActivity extends FragmentActivity {
         System.out.println("-------------");
         Log.d(TAG, "----");
 
-        double dLat = 43.0054446;
-        double dLong = -87.9678884;
-
-        if(location!=null){
-            //get the latitude
-            dLat = location.getLatitude();
-            //get the longitude
-            dLong = location.getLongitude();
-        }
-        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
+//        double dLat = 43.0054446;
+//        double dLong = -87.9678884;
+//
+//        if(location!=null){
+//            //get the latitude
+//            dLat = location.getLatitude();
+//            //get the longitude
+//            dLong = location.getLongitude();
+//        }
+//        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
     }
 
 
