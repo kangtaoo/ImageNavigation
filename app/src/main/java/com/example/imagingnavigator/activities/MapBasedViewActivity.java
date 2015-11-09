@@ -12,9 +12,11 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.imagingnavigator.function.Router;
 import com.example.imagingnavigator.imagingnavigator.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -95,6 +97,20 @@ public class MapBasedViewActivity extends FragmentActivity {
                 updateToCurLocation(null);
             }
         });
+
+        System.out.println("-------------");
+        Log.d(TAG, "----");
+
+        double dLat = 43.0054446;
+        double dLong = -87.9678884;
+
+        if(location!=null){
+            //get the latitude
+            dLat = location.getLatitude();
+            //get the longitude
+            dLong = location.getLongitude();
+        }
+        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
     }
 
 
@@ -161,8 +177,8 @@ public class MapBasedViewActivity extends FragmentActivity {
         mMap.clear();
         markerOpt = new MarkerOptions();
         // Add a marker in Sydney
-        double dLat = -34.00;
-        double dLong = 150.00;
+        double dLat = 43.0054446;
+        double dLong = -87.9678884;
 
         if(location!=null){
             //get the latitude
@@ -198,6 +214,10 @@ public class MapBasedViewActivity extends FragmentActivity {
         startActivity(intent);
     }
 
+    private void drawRoute(LatLng origin, LatLng dest, String mode) {
+        Router router = new Router(mMap);
+        router.drawRoute(origin, dest, mode);
+    }
 
     /**
      * Callback function for on-click router button
