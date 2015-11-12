@@ -8,7 +8,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.example.imagingnavigator.imagingnavigator.R;
+import com.example.imagingnavigator.R;
 
 /**
  *
@@ -18,6 +18,7 @@ public class MapBasedRouterActivity extends Activity {
     private static final String TAG = MapBasedViewActivity.class.getSimpleName();
 
     private WebView webView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

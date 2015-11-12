@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.example.imagingnavigator.function.CameraView;
-import com.example.imagingnavigator.imagingnavigator.R;
+import com.example.imagingnavigator.R;
 
 /**
  * Created by zhangxi on 10/23/15.

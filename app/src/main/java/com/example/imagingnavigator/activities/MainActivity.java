@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.imagingnavigator.imagingnavigator.R;
+import com.example.imagingnavigator.R;
 
 public class MainActivity extends Activity {
 

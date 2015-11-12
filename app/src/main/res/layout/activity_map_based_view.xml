@@ -1,9 +1,39 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:map="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:id="@+id/map"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.imagingnavigator.activities.MapBasedViewActivity"
-    android:name="com.google.android.gms.maps.SupportMapFragment" >
+    >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/btn_find"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_search"
+            android:layout_alignParentRight="true" />
+
+        <EditText
+            android:id="@+id/et_location"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="@string/hint_search_name"
+            android:layout_toLeftOf="@id/btn_find" />
+
+    </RelativeLayout>
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="com.google.android.gms.maps.SupportMapFragment" >
 
     <ImageButton
         android:layout_width="40dp"
@@ -14,6 +44,6 @@
         android:background="@drawable/arrow"
         android:onClick="onClickRouter"
         />
+    </fragment>
 
-
-</fragment>
+</LinearLayout>
