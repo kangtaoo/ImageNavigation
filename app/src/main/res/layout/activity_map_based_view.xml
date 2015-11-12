@@ -19,11 +19,12 @@
             android:text="@string/button_search"
             android:layout_alignParentRight="true" />
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/et_location"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
+            android:background="@android:color/transparent"
             android:hint="@string/hint_search_name"
             android:layout_toLeftOf="@id/btn_find" />
 

@@ -15,26 +15,33 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.imagingnavigator.R;
 import com.example.imagingnavigator.function.Router;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MapBasedViewActivity extends FragmentActivity {
+public class MapBasedViewActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
 
     private static final String TAG = MapBasedViewActivity.class.getSimpleName();
 
@@ -65,6 +72,14 @@ public class MapBasedViewActivity extends FragmentActivity {
     private MarkerOptions markerOptions;
     private LatLng latLng;
 
+    private AutoCompleteTextView etLocation;
+    private PlaceAutoCompleteAdapter mAdapter;
+    protected GoogleApiClient mGoogleApiClient;
+
+    //defalut route
+    private static final LatLngBounds BOUNDS_JAMAICA= new LatLngBounds(new LatLng(42.0054446, -87.9678884),
+            new LatLng(43.9257104d, -88.0508355d));
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +87,23 @@ public class MapBasedViewActivity extends FragmentActivity {
 
         //create SupportMapFragment object, and get Provider
         initProvider();
+
+        // Getting reference to EditText to get the user input location
+        etLocation = (AutoCompleteTextView) findViewById(R.id.et_location);
+
+        //set GoogleApiClient
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        MapsInitializer.initialize(this);
+        mGoogleApiClient.connect();
+
+        //set adapter
+        mAdapter = new PlaceAutoCompleteAdapter(this, android.R.layout.simple_list_item_1,
+                mGoogleApiClient, BOUNDS_JAMAICA, null);
+
         //Obtain the Map Fragment
         mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -86,7 +118,7 @@ public class MapBasedViewActivity extends FragmentActivity {
             //get the longitude
             dLong = location.getLongitude();
         }
-        drawRoute(new LatLng(dLat, dLong), new LatLng(42.9257104d, -88.0508355d), "driving");
+        //drawRoute(new LatLng(dLat, dLong), new LatLng(42.9257104d, -88.0508355d), "driving");
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -125,6 +157,9 @@ public class MapBasedViewActivity extends FragmentActivity {
         //initialize search button
         searchMap();
 
+        //initialize search bar
+        setAutoAdapter();
+
 //        double dLat = 43.0054446;
 //        double dLong = -87.9678884;
 //
@@ -137,13 +172,15 @@ public class MapBasedViewActivity extends FragmentActivity {
 //        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.search_list_activity,menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        //super.onCreateOptionsMenu(menu);
+//        getMenuInflater().inflate(R.menu.search_list_activity, menu);
+//        return true;
+//    }
+
+
 
     // An AsyncTask class for accessing the GeoCoding Web Service
     private class GeocoderTask extends AsyncTask<String, Void, List<Address>> {
@@ -256,8 +293,6 @@ public class MapBasedViewActivity extends FragmentActivity {
         View.OnClickListener findClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Getting reference to EditText to get the user input location
-                EditText etLocation = (EditText) findViewById(R.id.et_location);
                 // Getting user input location
                 String location = etLocation.getText().toString();
                 if(location!=null && !location.equals("")){
@@ -268,6 +303,69 @@ public class MapBasedViewActivity extends FragmentActivity {
         // Setting button click event listener for the find button
         btn_find.setOnClickListener(findClickListener);
     }
+
+
+
+    /**
+     * Adds auto complete adapter to  auto complete text view.
+     */
+    private void setAutoAdapter(){
+        etLocation.setAdapter(mAdapter);
+        etLocation.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                final PlaceAutoCompleteAdapter.PlaceAutocomplete item = mAdapter.getItem(position);
+                final String placeId = String.valueOf(item.placeId);
+                Log.e(TAG, "Autocomplete item selected: " + item.description);
+
+            /*
+             Issue a request to the Places Geo Data API to retrieve a Place object with additional
+              details about the place.
+              */
+//                PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+//                        .getPlaceById(mGoogleApiClient, placeId);
+//                placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+//                    @Override
+//                    public void onResult(PlaceBuffer places) {
+//                        if (!places.getStatus().isSuccess()) {
+//                            // Request did not complete successfully
+//                            Log.e(TAG, "Place query did not complete. Error: " + places.getStatus().toString());
+//                            places.release();
+//                            return;
+//                        }
+//                        // Get the Place object from the buffer.
+//                        final Place place = places.get(0);
+//
+//                        latLng = place.getLatLng();
+//                    }
+//                });
+
+            }
+        });
+        etLocation.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+
+                if (latLng != null) {
+                    latLng = null;
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+    }
+
 
 
 
@@ -326,6 +424,21 @@ public class MapBasedViewActivity extends FragmentActivity {
      * */
     public void onClickRouter(View view){
         startMapBasedRouter();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(TAG, connectionResult.toString());
     }
 
 }
