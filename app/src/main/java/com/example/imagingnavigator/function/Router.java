@@ -141,7 +141,7 @@ public class Router {
     }
 
     /** A class to parse the Google Places in JSON format */
-    private class ParserTask extends
+    private final class ParserTask extends
             AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
         // Parsing the data in non-ui thread
@@ -206,7 +206,7 @@ public class Router {
     }
 
     // Fetches data from url passed
-    private class DownloadTask extends AsyncTask<String, Void, String> {
+    private final class DownloadTask extends AsyncTask<String, Void, String> {
 
         // Downloading data in non-ui thread
         @Override
@@ -237,7 +237,7 @@ public class Router {
         }
     }
 
-    public class DirectionsJSONParser {
+    public final class DirectionsJSONParser {
         /**
          * Receives a JSONObject and returns a list of lists containing latitude and
          * longitude
