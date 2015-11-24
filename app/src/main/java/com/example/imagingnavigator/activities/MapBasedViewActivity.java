@@ -19,9 +19,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.imagingnavigator.R;
@@ -76,6 +78,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private PlaceAutoCompleteAdapter mAdapter;
     protected GoogleApiClient mGoogleApiClient;
 
+    private LinearLayout linearLayout;
+
     //defalut route
     private static final LatLngBounds BOUNDS_JAMAICA= new LatLngBounds(new LatLng(42.0054446, -87.9678884),
             new LatLng(43.9257104d, -88.0508355d));
@@ -87,6 +91,9 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
         //create SupportMapFragment object, and get Provider
         initProvider();
+
+        //Getting reference to Navigation button after click button
+        linearLayout = (LinearLayout)findViewById(R.id.after_search);
 
         // Getting reference to EditText to get the user input location
         etLocation = (AutoCompleteTextView) findViewById(R.id.et_location);
@@ -159,6 +166,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
         //initialize search bar
         setAutoAdapter();
+
+
 
 //        double dLat = 43.0054446;
 //        double dLong = -87.9678884;
@@ -298,6 +307,10 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 if(location!=null && !location.equals("")){
                     new GeocoderTask().execute(location);
                 }
+                //hide keyboard after you click search button
+                InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(etLocation.getWindowToken(), 0);
+                linearLayout.setVisibility(View.VISIBLE);
             }
         };
         // Setting button click event listener for the find button
