@@ -10,7 +10,21 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/camera_view"></FrameLayout>
+        android:id="@+id/camera_view">
+    </FrameLayout>
+
+    <ImageView
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:id="@+id/camera_based_vew_navigation_arrow"
+        android:layout_gravity="center"
+        android:onClick="onClickNavigationArrow"
+        android:visibility="visible"
+        android:src="@drawable/navigation_arrow_blue"
+        android:maxHeight="110dp"
+        android:maxWidth="110dp"
+        android:minHeight="110dp"
+        android:minWidth="110dp" />
 
     <ImageButton
         android:layout_width="80dp"
@@ -18,7 +32,7 @@
         android:id="@+id/camera_based_view_showMapView"
         android:layout_gravity="right|bottom"
         android:padding="40dp"
-        android:background="@drawable/map_button"
+        android:src="@drawable/map_button"
         android:onClick="onClickRouterMap"
         />
 
