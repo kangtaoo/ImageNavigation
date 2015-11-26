@@ -35,6 +35,17 @@ public class CameraBasedViewActivity extends Activity {
     private ImageView imageView;
     float angle = 0.0F;
 
+    // Sensors
+    private SensorManager sm;
+
+    private Sensor aSensor;
+    private Sensor mSensor;
+
+    float[] accelerometerValues = new float[3];
+    float[] magneticFieldValues = new float[3];
+
+    float value = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +68,20 @@ public class CameraBasedViewActivity extends Activity {
 
         imageView = (ImageView)findViewById(R.id.camera_based_vew_navigation_arrow);
 
+        sm = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        aSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(myListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        //更新显示数据的方法
+        calculateOrientation();
+
     }
 
     @Override
     public void onPause(){
-//        sm.unregisterListener(myListener);
+        sm.unregisterListener(myListener);
         super.onPause();
     }
 
@@ -83,7 +103,7 @@ public class CameraBasedViewActivity extends Activity {
 
     // This function is just for image rotation test, need to be removed latter
     public void onClickNavigationArrow(View view){
-        this.angle = (float)(Math.random()*360);
+        this.angle = (float) (Math.random() * 360);
         Log.i(TAG, "will rotate arrow by angle: " + angle + " degree.");
         this.imageView.setRotation(angle);
     }
@@ -92,6 +112,37 @@ public class CameraBasedViewActivity extends Activity {
         Intent intent = new Intent();
         intent.setClass(this, MapBasedRouterActivity.class);
         startActivity(intent);
+    }
+
+
+
+    final SensorEventListener myListener = new SensorEventListener() {
+        public void onSensorChanged(SensorEvent sensorEvent) {
+
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+                magneticFieldValues = sensorEvent.values;
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+                accelerometerValues = sensorEvent.values;
+            calculateOrientation();
+        }
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    };
+
+
+    private  void calculateOrientation() {
+        float[] values = new float[3];
+        float[] R = new float[9];
+        SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
+        SensorManager.getOrientation(R, values);
+
+        values[0] = (float) Math.toDegrees(values[0]);
+
+        setValue(values[0]);
+    }
+
+
+    private void setValue(float v) {
+        value = v;
     }
 
 
