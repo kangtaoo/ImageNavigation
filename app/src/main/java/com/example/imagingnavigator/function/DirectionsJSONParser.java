@@ -7,7 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -18,9 +17,9 @@ public final class DirectionsJSONParser {
      * Receives a JSONObject and returns a list of lists containing latitude and
      * longitude
      */
-    public List<List<HashMap<String, String>>> parse(JSONObject jObject) {
+    public List<List<double[]>> parse(JSONObject jObject) {
 
-        List<List<HashMap<String, String>>> routes = new ArrayList<>();
+        List<List<double[]>> routes = new ArrayList<>();
 //            JSONArray jRoutes = null;
 //            JSONArray jLegs = null;
 //            JSONArray jSteps = null;
@@ -36,7 +35,7 @@ public final class DirectionsJSONParser {
             for (int i = 0; i < jRoutes.length(); i++) {
                 jLegs = ((JSONObject) jRoutes.get(i)).getJSONArray("legs");
 //                    List path = new ArrayList<HashMap<String, String>>();
-                List<HashMap<String, String>> path = new ArrayList<>();
+                List<double[]> path = new ArrayList<>();
 
                 /** Traversing all legs */
                 for (int j = 0; j < jLegs.length(); j++) {
@@ -57,12 +56,9 @@ public final class DirectionsJSONParser {
 //                                hm.put("lng",
 //                                        Double.toString(((LatLng) list.get(l)).longitude));
 //                                path.add(hm);
-                            HashMap<String, String> hm = new HashMap<>();
-                            hm.put("lat",
-                                    Double.toString((list.get(l)).latitude));
-                            hm.put("lng",
-                                    Double.toString((list.get(l)).longitude));
-                            path.add(hm);
+
+                            double[] position = new double[]{list.get(l).latitude, list.get(l).longitude};
+                            path.add(position);
                         }
                     }
                     routes.add(path);
