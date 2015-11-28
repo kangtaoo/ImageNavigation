@@ -142,15 +142,15 @@ public class Router {
 
     /** A class to parse the Google Places in JSON format */
     private final class ParserTask extends
-            AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+            AsyncTask<String, Integer, List<List<double[]>>> {
 
         // Parsing the data in non-ui thread
         @Override
-        protected List<List<HashMap<String, String>>> doInBackground(
+        protected List<List<double[]>> doInBackground(
                 String... jsonData) {
 
             JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
+            List<List<double[]>> routes = null;
 
             try {
                 jObject = new JSONObject(jsonData[0]);
@@ -167,7 +167,7 @@ public class Router {
 
         // Executes in UI thread, after the parsing process
         @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+        protected void onPostExecute(List<List<double[]>> result) {
             ArrayList<LatLng> points;
             PolylineOptions lineOptions = null;
             //MarkerOptions markerOptions = new MarkerOptions();
@@ -179,14 +179,14 @@ public class Router {
                 lineOptions = new PolylineOptions();
 
                 // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
+                List<double[]> path = result.get(i);
 
                 // Fetching all the points in i-th route
                 for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
+                    double[] point = path.get(j);
 
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
+                    double lat = point[0];
+                    double lng = point[1];
                     LatLng position = new LatLng(lat, lng);
 
                     points.add(position);
