@@ -1,5 +1,7 @@
 package com.example.imagingnavigator.function;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -13,6 +15,9 @@ import java.util.List;
  * Created by kangkang on 11/25/15.
  */
 public final class DirectionsJSONParser {
+
+    private static final String TAG =  DirectionsJSONParser.class.getSimpleName();
+
     /**
      * Receives a JSONObject and returns a list of lists containing latitude and
      * longitude
@@ -61,6 +66,7 @@ public final class DirectionsJSONParser {
                             path.add(position);
                         }
                     }
+                    
                     routes.add(path);
                 }
             }

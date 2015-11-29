@@ -1,16 +1,21 @@
 package com.example.imagingnavigator.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Matrix;
-import android.graphics.Rect;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -18,6 +23,10 @@ import android.widget.ImageView;
 
 import com.example.imagingnavigator.function.CameraView;
 import com.example.imagingnavigator.R;
+import com.example.imagingnavigator.function.Navigator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by zhangxi on 10/23/15.
@@ -45,6 +54,17 @@ public class CameraBasedViewActivity extends Activity {
     float[] magneticFieldValues = new float[3];
 
     float value = 0;
+
+    List<double[]> route;
+    double[] curPosition;
+    double[] nextStep;
+    double nextStepAngle;
+
+    LocationManager locationManager;
+    String bestLocProvider;
+    Location curLocation;
+
+    double curOrientation;
 
 
     @Override
@@ -75,7 +95,11 @@ public class CameraBasedViewActivity extends Activity {
         sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
         sm.registerListener(myListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
         //更新显示数据的方法
-        calculateOrientation();
+        curOrientation = calculateOrientation();
+
+        initLocProvider();
+
+        route = getRoute();
 
     }
 
@@ -114,8 +138,10 @@ public class CameraBasedViewActivity extends Activity {
         startActivity(intent);
     }
 
-
-
+    /**
+     * This listener will be registered to sensor manager to
+     * interactive with sensor events
+     * */
     final SensorEventListener myListener = new SensorEventListener() {
         public void onSensorChanged(SensorEvent sensorEvent) {
 
@@ -123,13 +149,21 @@ public class CameraBasedViewActivity extends Activity {
                 magneticFieldValues = sensorEvent.values;
             if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
                 accelerometerValues = sensorEvent.values;
-            calculateOrientation();
+
+            curOrientation = calculateOrientation();
+
+            curPosition = getCurPosition();
+
+            nextStep = Navigator.getTargetPoint(route,curPosition);
+            nextStepAngle = Navigator.getTargetAngle(curPosition, nextStep);
+
+            imageView.setRotation((float)(nextStepAngle - curOrientation));
         }
         public void onAccuracyChanged(Sensor sensor, int accuracy) {}
     };
 
 
-    private  void calculateOrientation() {
+    private double calculateOrientation() {
         float[] values = new float[3];
         float[] R = new float[9];
         SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
@@ -137,7 +171,7 @@ public class CameraBasedViewActivity extends Activity {
 
         values[0] = (float) Math.toDegrees(values[0]);
 
-        setValue(values[0]);
+        return values[0];
     }
 
 
@@ -146,5 +180,90 @@ public class CameraBasedViewActivity extends Activity {
     }
 
 
+    private List<double[]> getRoute(){
+        List<double[]> route = new ArrayList<double[]>();
+        // Simulate navigation from
+        // https://maps.googleapis.com/maps/api/directions/json?origin=40.694533,%20-73.986865&
+        //      destination=40.729846,%20-73.997482&sensor=false&mode=driving----
 
+        route.add(new double[]{40.6945413, -73.98718579999999});
+        route.add(new double[]{40.6960476,-73.9871132});
+        route.add(new double[]{40.6960476,-73.9871132});
+        route.add(new double[]{40.6959467,-73.9845715});
+        route.add(new double[]{40.6959467,-73.9845715});
+        route.add(new double[]{40.6971449,-73.9849648});
+        route.add(new double[]{40.6971449,-73.9849648});
+        route.add(new double[]{40.7154786,-73.99523050000001});
+        route.add(new double[]{40.7154786,-73.99523050000001});
+        route.add(new double[]{40.7159842,-73.99544139999999});
+        route.add(new double[]{40.7159842,-73.99544139999999});
+        route.add(new double[]{40.72026,-73.9940697});
+        route.add(new double[]{40.72026,-73.9940697});
+        route.add(new double[]{40.7240559,-73.99256249999999});
+        route.add(new double[]{40.7240559,-73.99256249999999});
+        route.add(new double[]{40.72699859999999,-73.9998762});
+        route.add(new double[]{40.72699859999999,-73.9998762});
+        route.add(new double[]{40.7298372,-73.9974637});
+
+        return route;
+    }
+
+    private double[] getCurPosition(){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
+
+        curLocation = locationManager.getLastKnownLocation(bestLocProvider);
+
+        return new double[]{curLocation.getLatitude(), curLocation.getLongitude()};
+
+
+    }
+
+    private void initLocProvider(){
+        this.locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        Criteria criteria = new Criteria();
+        this.bestLocProvider = locationManager.getBestProvider(criteria, false);
+        this.curLocation = locationManager.getLastKnownLocation(bestLocProvider);
+
+        // set the listener, update the location per 3 seconds(3*1000) automatically or moving more than 8 meters
+        locationManager.requestLocationUpdates(bestLocProvider, 3 * 1000, 8, new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+                if (ContextCompat.checkSelfPermission(CameraBasedViewActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(CameraBasedViewActivity.this,
+                                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                curLocation = locationManager.getLastKnownLocation(provider);
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        });
+    }
 }
