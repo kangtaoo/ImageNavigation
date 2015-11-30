@@ -10,7 +10,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -61,7 +60,7 @@ public class CameraBasedViewActivity extends Activity {
     double nextStepAngle;
 
     LocationManager locationManager;
-    String bestLocProvider;
+    String locProvider;
     Location curLocation;
 
     double curOrientation;
@@ -153,6 +152,8 @@ public class CameraBasedViewActivity extends Activity {
             curOrientation = calculateOrientation();
 
             curPosition = getCurPosition();
+            Log.e(TAG,"========Current position is: [" + curPosition[0] +
+                    " " + curPosition[1] + "]============");
 
             nextStep = Navigator.getTargetPoint(route,curPosition);
             nextStepAngle = Navigator.getTargetAngle(curPosition, nextStep);
@@ -216,7 +217,7 @@ public class CameraBasedViewActivity extends Activity {
             return null;
         }
 
-        curLocation = locationManager.getLastKnownLocation(bestLocProvider);
+        curLocation = locationManager.getLastKnownLocation(locProvider);
 
         return new double[]{curLocation.getLatitude(), curLocation.getLongitude()};
 
@@ -231,13 +232,26 @@ public class CameraBasedViewActivity extends Activity {
                         Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        //getting GPS status
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        //getting network status
+        boolean isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-        Criteria criteria = new Criteria();
-        this.bestLocProvider = locationManager.getBestProvider(criteria, false);
-        this.curLocation = locationManager.getLastKnownLocation(bestLocProvider);
+
+        if(!isNetworkEnabled && !isGPSEnabled){
+            return;
+        }else if(isNetworkEnabled){
+            this.locProvider = LocationManager.NETWORK_PROVIDER;
+        }else{
+            this.locProvider = LocationManager.GPS_PROVIDER;
+        }
+
+//        Criteria criteria = new Criteria();
+//        this.bestLocProvider = locationManager.getBestProvider(criteria, false);
+        this.curLocation = locationManager.getLastKnownLocation(locProvider);
 
         // set the listener, update the location per 3 seconds(3*1000) automatically or moving more than 8 meters
-        locationManager.requestLocationUpdates(bestLocProvider, 3 * 1000, 8, new LocationListener() {
+        locationManager.requestLocationUpdates(locProvider, 3 * 1000, 8, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
 
