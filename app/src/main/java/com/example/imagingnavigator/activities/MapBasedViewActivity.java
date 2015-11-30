@@ -27,6 +27,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.imagingnavigator.R;
@@ -96,6 +97,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private LinearLayout linearLayout;
     private ImageButton walkButton;
     private ImageButton driveButton;
+    private ImageButton cameraButton;
 
     //defalut route
     private static final LatLngBounds BOUNDS_JAMAICA = new LatLngBounds(new LatLng(42.0054446, -87.9678884),
@@ -167,7 +169,11 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 //        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
     }
 
+    @Override
+    protected void onPause(){
+        super.onPause();
 
+    }
 
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
@@ -396,6 +402,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private void searchMap(){
         // Getting reference to btn_find of the layout activity_main
         Button btn_find = (Button) findViewById(R.id.btn_find);
+        final TextView locationInfo = (TextView)findViewById(R.id.location_info);
         // Defining button click event listener for the find button
         View.OnClickListener findClickListener = new View.OnClickListener() {
             @Override
@@ -411,6 +418,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 linearLayout.setVisibility(View.VISIBLE);
                 //after click search, we will display the mode buttons
                 initNavigationgMode();
+                //show destination information
+                locationInfo.setText(location);
             }
         };
         // Setting button click event listener for the find button
@@ -560,9 +569,13 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private void initNavigationgMode(){
         walkButton = (ImageButton)findViewById(R.id.walk_mode);
         driveButton = (ImageButton)findViewById(R.id.drive_mode);
+        cameraButton = (ImageButton)findViewById(R.id.btn_camera);
         walkButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                cameraButton.setVisibility(View.VISIBLE);
+                walkButton.setVisibility(View.INVISIBLE);
+                driveButton.setVisibility(View.VISIBLE);
                 drawRoute(curLatLng, latLng, "walking");
                 updateToMapNavigationView();
             }
@@ -570,8 +583,19 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         driveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                cameraButton.setVisibility(View.VISIBLE);
+                driveButton.setVisibility(View.INVISIBLE);
+                walkButton.setVisibility(View.VISIBLE);
                 drawRoute(curLatLng, latLng, "driving");
                 updateToMapNavigationView();
+            }
+        });
+        cameraButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent();
+                intent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
+                startActivity(intent);
             }
         });
     }

@@ -133,7 +133,7 @@ public class CameraBasedViewActivity extends Activity {
 
     public void startMapBasedRouter(){
         Intent intent = new Intent();
-        intent.setClass(this, MapBasedRouterActivity.class);
+        intent.setClass(this, MapBasedViewActivity.class);
         startActivity(intent);
     }
 
@@ -152,8 +152,8 @@ public class CameraBasedViewActivity extends Activity {
             curOrientation = calculateOrientation();
 
             curPosition = getCurPosition();
-            Log.e(TAG,"========Current position is: [" + curPosition[0] +
-                    " " + curPosition[1] + "]============");
+//            Log.e(TAG,"========Current position is: [" + curPosition[0] +
+//                    " " + curPosition[1] + "]============");
 
             nextStep = Navigator.getTargetPoint(route,curPosition);
             nextStepAngle = Navigator.getTargetAngle(curPosition, nextStep);

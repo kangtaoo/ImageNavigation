@@ -51,20 +51,27 @@
             android:id="@+id/walk_mode"
             android:padding="40dp"
             android:layout_gravity="right"
-            android:background="@drawable/arrow"
+            android:background="@drawable/person"
             android:onClick="onClickRouter"
             />
         <ImageButton android:id="@+id/drive_mode"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:background="@drawable/camera_blue"
+            android:background="@drawable/car"
             android:layout_gravity="right"
             android:layout_marginTop="20dp"
             android:layout_alignTop="@+id/map_based_view_showRouterView"
             />
+            <ImageButton android:id="@+id/btn_camera"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:background="@drawable/camera_blue"
+                android:layout_gravity="left"
+                android:layout_marginTop="20dp"
+                android:visibility="invisible"
+                />
 
-
-            <TextView android:id="@+id/btn_camera"
+            <TextView android:id="@+id/location_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
