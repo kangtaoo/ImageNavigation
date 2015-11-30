@@ -48,13 +48,13 @@
         <ImageButton
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:id="@+id/map_based_view_showRouterView"
+            android:id="@+id/walk_mode"
             android:padding="40dp"
             android:layout_gravity="right"
             android:background="@drawable/arrow"
             android:onClick="onClickRouter"
             />
-        <ImageButton android:id="@+id/btn_map"
+        <ImageButton android:id="@+id/drive_mode"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:background="@drawable/camera_blue"

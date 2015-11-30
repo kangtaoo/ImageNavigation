@@ -1,7 +1,9 @@
 package com.example.imagingnavigator.activities;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -23,6 +25,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -43,10 +46,21 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.util.List;
 
-public class MapBasedViewActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks{
+public class MapBasedViewActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private static final String TAG = MapBasedViewActivity.class.getSimpleName();
 
+    //The mininum distance to update location in 50 meters
+    private static final long MIN_DISTANCE_FOR_UPDATE = 50;
+    //The minimum time to update location in 1 minutes
+    private static final long MIN_TIME_FOR_UPDATE = 1000 * 60 * 1;
+    //flag for GPS status
+    boolean isGPSEnabled = false;
+
+    //flag for network status
+    boolean isNetworkEnabled = false;
+    //flag for current location status
+    boolean canGetLocation = false;
     /**
      * Start activity type for start the CameraBasedViewActivity.
      */
@@ -73,15 +87,18 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
     private MarkerOptions markerOptions;
     private LatLng latLng;
+    private LatLng curLatLng;
 
     private AutoCompleteTextView etLocation;
     private PlaceAutoCompleteAdapter mAdapter;
     protected GoogleApiClient mGoogleApiClient;
 
     private LinearLayout linearLayout;
+    private ImageButton walkButton;
+    private ImageButton driveButton;
 
     //defalut route
-    private static final LatLngBounds BOUNDS_JAMAICA= new LatLngBounds(new LatLng(42.0054446, -87.9678884),
+    private static final LatLngBounds BOUNDS_JAMAICA = new LatLngBounds(new LatLng(42.0054446, -87.9678884),
             new LatLng(43.9257104d, -88.0508355d));
 
     @Override
@@ -90,10 +107,10 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         setContentView(R.layout.activity_map_based_view);
 
         //create SupportMapFragment object, and get Provider
-        initProvider();
+        //initProvider();
 
         //Getting reference to Navigation button after click button
-        linearLayout = (LinearLayout)findViewById(R.id.after_search);
+        linearLayout = (LinearLayout) findViewById(R.id.after_search);
 
         // Getting reference to EditText to get the user input location
         etLocation = (AutoCompleteTextView) findViewById(R.id.et_location);
@@ -114,12 +131,11 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         //Obtain the Map Fragment
         mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        updateToCurLocation(location);
-
+        getCurLocation();
         double dLat = 43.0054446;
         double dLong = -87.9678884;
 
-        if(location!=null){
+        if (location != null) {
             //get the latitude
             dLat = location.getLatitude();
             //get the longitude
@@ -127,36 +143,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         }
         //drawRoute(new LatLng(dLat, dLong), new LatLng(42.9257104d, -88.0508355d), "driving");
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            return;
-        }
-        // set the listener, update the location per 3 seconds(3*1000) automatically or moving more than 8 meters
-        locationManager.requestLocationUpdates(bestProvider, 3 * 1000, 8, new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                updateToCurLocation(location);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-                if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                location = locationManager.getLastKnownLocation(provider);
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                updateToCurLocation(null);
-            }
-        });
 
         System.out.println("-------------");
         Log.d(TAG, "----");
@@ -164,9 +150,9 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         //initialize search button
         searchMap();
 
+
         //initialize search bar
         setAutoAdapter();
-
 
 
 //        double dLat = 43.0054446;
@@ -181,6 +167,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 //        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
     }
 
+
+
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
 //        // Inflate the menu; this adds items to the action bar if it is present.
@@ -188,7 +176,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 //        getMenuInflater().inflate(R.menu.search_list_activity, menu);
 //        return true;
 //    }
-
 
 
     // An AsyncTask class for accessing the GeoCoding Web Service
@@ -233,9 +220,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     }
 
 
-
-
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -254,6 +238,120 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 //        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 //    }
+
+    /**
+     * get current location
+     */
+    public void getCurLocation(){
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        //getting GPS status
+        isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        //getting network status
+        isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        if (!isGPSEnabled && !isNetworkEnabled) {
+            showSettingAlert();
+        } else {
+            if (isNetworkEnabled) {
+                // set the listener, update the location per 3 seconds(3*1000) automatically or moving more than 8 meters
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 3 * 1000, 8, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        curLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                        updateToCurLocation(location);
+                    }
+
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+
+                        if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        Log.i("LastKnow:", location.toString());
+
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                        updateToCurLocation(null);
+                    }
+                });
+            }else{
+                if (isGPSEnabled) {
+                    if (location == null) {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3 * 1000, 8, new LocationListener() {
+                            @Override
+                            public void onLocationChanged(Location location1) {
+                                location = location1;
+                                curLatLng = new LatLng(location1.getLatitude(), location1.getLongitude());
+                                updateToCurLocation(location1);
+                            }
+
+                            @Override
+                            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                            }
+
+                            @Override
+                            public void onProviderEnabled(String provider) {
+
+                                if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                    return;
+                                }
+                                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                Log.i("LastKnow:", location.toString());
+
+
+                            }
+
+                            @Override
+                            public void onProviderDisabled(String provider) {
+                                updateToCurLocation(null);
+                            }
+                        });
+
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Function to show setting alert dialog on pressing setting button will launch settings option
+     */
+    public void showSettingAlert(){
+        AlertDialog.Builder alerDialog = new AlertDialog.Builder(getApplicationContext());
+        //setting dialogHelp title
+        alerDialog.setTitle("GPS settings");
+        //setting dialogHelp message
+        alerDialog.setMessage("GPS is not enabled. Do you want to go to settings option?");
+
+        //on pressing settings button
+        alerDialog.setPositiveButton("Settings",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        getApplicationContext().startActivity(intent);
+                    }
+                });
+        //on pressing cancel button
+        alerDialog.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface,int i){
+                        dialogInterface.cancel();
+                    }
+                });
+        //showing alert message
+        alerDialog.show();
+    }
 
     /**
      * initialize the provider
@@ -311,6 +409,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(etLocation.getWindowToken(), 0);
                 linearLayout.setVisibility(View.VISIBLE);
+                //after click search, we will display the mode buttons
+                initNavigationgMode();
             }
         };
         // Setting button click event listener for the find button
@@ -452,6 +552,52 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e(TAG, connectionResult.toString());
+    }
+
+    /**
+     * Set walking and driving button
+     */
+    private void initNavigationgMode(){
+        walkButton = (ImageButton)findViewById(R.id.walk_mode);
+        driveButton = (ImageButton)findViewById(R.id.drive_mode);
+        walkButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                drawRoute(curLatLng, latLng, "walking");
+                updateToMapNavigationView();
+            }
+        });
+        driveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawRoute(curLatLng, latLng, "driving");
+                updateToMapNavigationView();
+            }
+        });
+    }
+
+    /**
+     * update to the map navigation view
+     */
+    private void updateToMapNavigationView(){
+        mMap.clear();
+        MarkerOptions markerOpt1 = new MarkerOptions();
+        //set the marker
+        markerOpt1.position(curLatLng);
+        markerOpt1.draggable(false);
+        markerOpt1.visible(true);
+        markerOpt1.anchor(0.5f, 0.5f);
+        markerOpt1.title("current location");
+        mMap.addMarker(markerOpt1);
+
+        //move the camera to the current location
+        cameraPosition = new CameraPosition.Builder()
+                .target(curLatLng)      //set the center of the map to current location
+                .zoom(20)      //map zoom
+                .bearing(0)    //Sets the orientation of the camera to east
+                .tilt(90)      // Sets the tilt of the camera to 30 degrees
+                .build();      // Creates a CameraPosition from the builder
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
 }
