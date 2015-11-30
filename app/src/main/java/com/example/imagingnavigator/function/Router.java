@@ -191,7 +191,7 @@ public class Router {
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(13);
+                lineOptions.width(14);
 
                 // Changing the color polyline according to the mode
                 lineOptions.color(Color.BLUE);

@@ -135,7 +135,8 @@ public class CameraBasedViewActivity extends Activity {
         Intent intent = new Intent();
         intent.setClass(this, MapBasedViewActivity.class);
         intent.putExtra("curLocation", curPosition);
-        startActivity(intent);
+        setResult(Activity.RESULT_OK,intent);
+        finish();
     }
 
     /**

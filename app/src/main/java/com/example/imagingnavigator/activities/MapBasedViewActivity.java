@@ -51,7 +51,7 @@ import java.util.List;
 public class MapBasedViewActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private static final String TAG = MapBasedViewActivity.class.getSimpleName();
-
+    private static final int REQUEST_CODE_CAMERA = 1;
     //The mininum distance to update location in 50 meters
     private static final long MIN_DISTANCE_FOR_UPDATE = 50;
     //The minimum time to update location in 1 minutes
@@ -63,6 +63,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     boolean isNetworkEnabled = false;
     //flag for current location status
     boolean canGetLocation = false;
+
+    double[] curPosition;
     /**
      * Start activity type for start the CameraBasedViewActivity.
      */
@@ -141,6 +143,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         //Obtain the Map Fragment
         mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
         getCurLocation();
         double dLat = 43.0054446;
         double dLong = -87.9678884;
@@ -184,23 +187,43 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         PreferenceManager.getDefaultSharedPreferences(this).edit()
                 .putString(this.NAVIGATION_MODE, naviMode)
                 .commit();
+        if(latLng!=null) {
+            PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putString(this.NAVIGATION_DESTINATION_LATITUDE, Double.toString(latLng.latitude))
+                    .commit();
 
-        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putString(this.NAVIGATION_DESTINATION_LATITUDE, Double.toString(latLng.latitude))
-                .commit();
+            PreferenceManager.getDefaultSharedPreferences(this).edit()
+                    .putString(this.NAVIGATION_DESTINATION_LONGITUDE, Double.toString(latLng.longitude))
+                    .commit();
 
-        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putString(this.NAVIGATION_DESTINATION_LONGITUDE, Double.toString(latLng.longitude))
-                .commit();
-
-        Log.e(TAG, "=========onPause::naviMode is: " + naviMode + "============");
-        Log.e(TAG, "=========onPause::current LatLng is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
+            Log.e(TAG, "=========onPause::naviMode is: " + naviMode + "============");
+            Log.e(TAG, "=========onPause::current LatLng is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
+        }
     }
 
     @Override
     protected void onResume(){
         super.onResume();
 
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // TODO - fill in here
+        Log.e("--------getReturn:","before");
+        if (data!=null){
+            switch (requestCode){
+                case REQUEST_CODE_CAMERA:
+
+                    curPosition = data.getExtras().getDoubleArray("curLocation");
+                    Log.e("--------getReturn:===:",String.valueOf(curPosition[0]));
+                    getReturnStatus();
+                    break;
+
+            }
+        }
+    }
+
+    private void getReturnStatus(){
         naviMode = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(this.NAVIGATION_MODE, null);
 
@@ -208,20 +231,43 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 .getString(this.NAVIGATION_DESTINATION_LATITUDE, null);
         String longitudeStr = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(this.NAVIGATION_DESTINATION_LONGITUDE, null);
+        if(!naviMode.isEmpty()) {
+            if (latitudeStr != null && longitudeStr != null) {
+                double latitude = Double.valueOf(latitudeStr);
 
-        if(latitudeStr != null && longitudeStr != null){
-            double latitude = Double.valueOf(latitudeStr);
+                double longitude = Double.valueOf(longitudeStr);
 
-            double longitude = Double.valueOf(longitudeStr);
+                latLng = new LatLng(latitude, longitude);
+                Log.e(TAG, "=========onResume::naviMode is: " + naviMode + "============");
+                Log.e(TAG, "=========onResume::current LatLng is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
 
-            latLng = new LatLng(latitude, longitude);
-            Log.e(TAG, "=========onResume::naviMode is: " + naviMode + "============");
-            Log.e(TAG, "=========onResume::current LatLng is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
+                walkButton = (ImageButton) findViewById(R.id.walk_mode);
+                driveButton = (ImageButton) findViewById(R.id.drive_mode);
+                cameraButton = (ImageButton) findViewById(R.id.btn_camera);
+
+                if ("driving".equals(naviMode)) {
+                    cameraButton.setVisibility(View.VISIBLE);
+                    driveButton.setVisibility(View.INVISIBLE);
+                    walkButton.setVisibility(View.VISIBLE);
+                } else if ("walking".equals(naviMode)) {
+                    cameraButton.setVisibility(View.VISIBLE);
+                    driveButton.setVisibility(View.VISIBLE);
+                    walkButton.setVisibility(View.INVISIBLE);
+                }
+
+                Log.e(TAG, "=========onResume::naviMode1 is: " + naviMode + "============");
+                Log.e(TAG, "=========onResume::current LatLng1 is: [" + curLatLng.latitude + " " + curLatLng.longitude + "]==========");
+                Log.e(TAG, "=========onResume::destination LatLng1 is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
+                if(curPosition.length!=0){
+                    curLatLng = new LatLng(curPosition[0],curPosition[1]);
+                    drawRoute(curLatLng, latLng, naviMode);
+                }
+
+                updateToMapNavigationView();
+
+            }
         }
-
-
-    }
-
+        }
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
 //        // Inflate the menu; this adds items to the action bar if it is present.
@@ -644,7 +690,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
             public void onClick(View view){
                 Intent intent = new Intent();
                 intent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,REQUEST_CODE_CAMERA);
             }
         });
     }
@@ -666,7 +712,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         //move the camera to the current location
         cameraPosition = new CameraPosition.Builder()
                 .target(curLatLng)      //set the center of the map to current location
-                .zoom(20)      //map zoom
+                .zoom(19)      //map zoom
                 .bearing(0)    //Sets the orientation of the camera to east
                 .tilt(90)      // Sets the tilt of the camera to 30 degrees
                 .build();      // Creates a CameraPosition from the builder
