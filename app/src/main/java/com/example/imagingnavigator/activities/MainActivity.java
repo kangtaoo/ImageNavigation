@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
      */
     private void startMapBasedView() {
         Intent intent = new Intent();
-        intent.setClass(MainActivity.this, CameraBasedViewActivity.class);
+        intent.setClass(MainActivity.this, MapBasedViewActivity.class);
         startActivityForResult(intent, MAP_BASED_VIEW);
     }
 
