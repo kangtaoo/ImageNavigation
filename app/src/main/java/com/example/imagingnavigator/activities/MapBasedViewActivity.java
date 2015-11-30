@@ -14,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -99,6 +100,13 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private ImageButton driveButton;
     private ImageButton cameraButton;
 
+    private static final String NAVIGATION_MODE = "mode";
+    private static final String NAVIGATION_DESTINATION_LATITUDE = "latitude";
+    private static final String NAVIGATION_DESTINATION_LONGITUDE = "longitude";
+
+    private String naviMode;
+
+
     //defalut route
     private static final LatLngBounds BOUNDS_JAMAICA = new LatLngBounds(new LatLng(42.0054446, -87.9678884),
             new LatLng(43.9257104d, -88.0508355d));
@@ -172,6 +180,45 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     @Override
     protected void onPause(){
         super.onPause();
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(this.NAVIGATION_MODE, naviMode)
+                .commit();
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(this.NAVIGATION_DESTINATION_LATITUDE, Double.toString(latLng.latitude))
+                .commit();
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(this.NAVIGATION_DESTINATION_LONGITUDE, Double.toString(latLng.longitude))
+                .commit();
+
+        Log.e(TAG, "=========onPause::naviMode is: " + naviMode + "============");
+        Log.e(TAG, "=========onPause::current LatLng is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        naviMode = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(this.NAVIGATION_MODE, null);
+
+        String latitudeStr = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(this.NAVIGATION_DESTINATION_LATITUDE, null);
+        String longitudeStr = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(this.NAVIGATION_DESTINATION_LONGITUDE, null);
+
+        if(latitudeStr != null && longitudeStr != null){
+            double latitude = Double.valueOf(latitudeStr);
+
+            double longitude = Double.valueOf(longitudeStr);
+
+            latLng = new LatLng(latitude, longitude);
+            Log.e(TAG, "=========onResume::naviMode is: " + naviMode + "============");
+            Log.e(TAG, "=========onResume::current LatLng is: [" + latLng.latitude + " " + latLng.longitude + "]==========");
+        }
+
 
     }
 
@@ -576,7 +623,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 cameraButton.setVisibility(View.VISIBLE);
                 walkButton.setVisibility(View.INVISIBLE);
                 driveButton.setVisibility(View.VISIBLE);
-                drawRoute(curLatLng, latLng, "walking");
+                naviMode = "walking";
+                drawRoute(curLatLng, latLng, naviMode);
                 updateToMapNavigationView();
             }
         });
@@ -586,7 +634,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 cameraButton.setVisibility(View.VISIBLE);
                 driveButton.setVisibility(View.INVISIBLE);
                 walkButton.setVisibility(View.VISIBLE);
-                drawRoute(curLatLng, latLng, "driving");
+                naviMode = "driving";
+                drawRoute(curLatLng, latLng, naviMode);
                 updateToMapNavigationView();
             }
         });
