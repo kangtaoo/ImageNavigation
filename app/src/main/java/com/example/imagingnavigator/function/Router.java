@@ -33,10 +33,14 @@ public class Router {
 
     private static final int GEOPOTINT_VERSION = 1;
 
-    private final GoogleMap mMap;
+    private static final String ROUTE_JSON_DATA = "routeJsonData";
 
-    public Router(GoogleMap map) {
+    private final GoogleMap mMap;
+    private final UpdateIntent updateIntent;
+
+    public Router(GoogleMap map, UpdateIntent updateIntent) {
         mMap = map;
+        this.updateIntent = updateIntent;
     }
 
     public GeoPoint locationToGeoPoint(Location location) {
@@ -74,7 +78,6 @@ public class Router {
 
         // String waypointLatLng = "waypoints="+"40.036675"+","+"116.32885";
 
-        // 如果使用途径点，需要添加此字段
         // String waypoints = "waypoints=";
 
         //String parameters = "";
@@ -228,13 +231,12 @@ public class Router {
             super.onPostExecute(result);
 
             ParserTask parserTask = new ParserTask();
+            updateIntent.updateIntent(result);
 
             // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
         }
     }
-
-
 
     public void drawRoute(LatLng origin, LatLng dest, String mode) {
         DownloadTask downloadTask = new DownloadTask();

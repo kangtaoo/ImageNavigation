@@ -36,6 +36,8 @@ public class CameraBasedViewActivity extends Activity {
 
     private static final String TAG = CameraBasedViewActivity.class.getSimpleName();
 
+    private static final String ROUTE_JSON_DATA = "routeJsonData";
+
     private Camera camera;
     private CameraView cameraView;
 
@@ -99,6 +101,11 @@ public class CameraBasedViewActivity extends Activity {
         initLocProvider();
 
         route = getRoute();
+
+
+        Intent intent = getIntent();
+        String routeString = intent.getStringExtra(ROUTE_JSON_DATA);
+        Log.i(TAG, routeString + "");
 
     }
 

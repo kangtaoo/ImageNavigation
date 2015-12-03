@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import com.example.imagingnavigator.R;
 import com.example.imagingnavigator.function.Router;
+import com.example.imagingnavigator.function.UpdateIntent;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
@@ -56,6 +57,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private static final long MIN_DISTANCE_FOR_UPDATE = 50;
     //The minimum time to update location in 1 minutes
     private static final long MIN_TIME_FOR_UPDATE = 1000 * 60 * 1;
+    private static final String ROUTE_JSON_DATA = "routeJsonData";
     //flag for GPS status
     boolean isGPSEnabled = false;
 
@@ -108,6 +110,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
     private String naviMode;
 
+    private Intent cameraIntent;
 
     //defalut route
     private static final LatLngBounds BOUNDS_JAMAICA = new LatLngBounds(new LatLng(42.0054446, -87.9678884),
@@ -123,6 +126,9 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
         //Getting reference to Navigation button after click button
         linearLayout = (LinearLayout) findViewById(R.id.after_search);
+
+//        cameraIntent = new Intent();
+//        cameraIntent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
 
         // Getting reference to EditText to get the user input location
         etLocation = (AutoCompleteTextView) findViewById(R.id.et_location);
@@ -306,7 +312,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                 // Creating an instance of GeoPoint, to display in Google Map
                 latLng = new LatLng(address.getLatitude(), address.getLongitude());
                 String addressText = String.format("%s, %s",
-                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "", address.getCountryName());
+                        address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : ""
+                        , address.getCountryName());
                 markerOptions = new MarkerOptions();
                 markerOptions.position(latLng);
                 markerOptions.title(addressText);
@@ -360,20 +367,16 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                     }
 
                     @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                    }
+                    public void onStatusChanged(String provider, int status, Bundle extras) {}
 
                     @Override
                     public void onProviderEnabled(String provider) {
-
-                        if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this,
+                                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                             return;
                         }
                         location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                         Log.i("LastKnow:", location.toString());
-
-
                     }
 
                     @Override
@@ -384,29 +387,33 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
             }else{
                 if (isGPSEnabled) {
                     if (location == null) {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3 * 1000, 8, new LocationListener() {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                                3 * 1000, 8, new LocationListener() {
                             @Override
                             public void onLocationChanged(Location location1) {
                                 location = location1;
-                                curLatLng = new LatLng(location1.getLatitude(), location1.getLongitude());
+                                curLatLng = new LatLng(location1.getLatitude(),
+                                        location1.getLongitude());
                                 updateToCurLocation(location1);
                             }
 
                             @Override
-                            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                            }
+                            public void onStatusChanged(String provider, int status, Bundle extras) {}
 
                             @Override
                             public void onProviderEnabled(String provider) {
-
-                                if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(MapBasedViewActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                if (ContextCompat.checkSelfPermission(MapBasedViewActivity.this,
+                                        Manifest.permission.ACCESS_FINE_LOCATION)
+                                        != PackageManager.PERMISSION_GRANTED
+                                        && ContextCompat
+                                        .checkSelfPermission(MapBasedViewActivity.this,
+                                                Manifest.permission.ACCESS_COARSE_LOCATION)
+                                        != PackageManager.PERMISSION_GRANTED) {
                                     return;
                                 }
-                                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                location = locationManager
+                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
                                 Log.i("LastKnow:", location.toString());
-
-
                             }
 
                             @Override
@@ -458,7 +465,10 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private void initProvider() {
         //create LocationManager object
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         //check if GPS will work
@@ -469,7 +479,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
             startActivityForResult(intent, 0);
             return;
         }
-
 
         //list all providers
         List<String> providers = locationManager.getAllProviders();
@@ -506,7 +515,8 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                     new GeocoderTask().execute(location);
                 }
                 //hide keyboard after you click search button
-                InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager inputMethodManager =
+                        (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(etLocation.getWindowToken(), 0);
                 linearLayout.setVisibility(View.VISIBLE);
                 //after click search, we will display the mode buttons
@@ -518,8 +528,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         // Setting button click event listener for the find button
         btn_find.setOnClickListener(findClickListener);
     }
-
-
 
     /**
      * Adds auto complete adapter to  auto complete text view.
@@ -566,23 +574,16 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-
                 if (latLng != null) {
                     latLng = null;
                 }
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
     }
-
-
-
 
     /**
      * update to the current location
@@ -629,7 +630,21 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     }
 
     private void drawRoute(LatLng origin, LatLng dest, String mode) {
-        Router router = new Router(mMap);
+        Router router = new Router(mMap, new UpdateIntent(){
+            @Override
+            public void updateIntent(final String result) {
+                cameraButton.setVisibility(View.VISIBLE);
+                cameraButton.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view){
+                        Intent intent = new Intent();
+                        intent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
+                        intent.putExtra(ROUTE_JSON_DATA, result);
+                        startActivityForResult(intent,REQUEST_CODE_CAMERA);
+                    }
+                });
+            }
+        });
         router.drawRoute(origin, dest, mode);
     }
 
@@ -663,10 +678,10 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         walkButton = (ImageButton)findViewById(R.id.walk_mode);
         driveButton = (ImageButton)findViewById(R.id.drive_mode);
         cameraButton = (ImageButton)findViewById(R.id.btn_camera);
-        walkButton.setOnClickListener(new View.OnClickListener(){
+        walkButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                cameraButton.setVisibility(View.VISIBLE);
+            public void onClick(View view) {
+                //cameraButton.setVisibility(View.VISIBLE);
                 walkButton.setVisibility(View.INVISIBLE);
                 driveButton.setVisibility(View.VISIBLE);
                 naviMode = "walking";
@@ -677,20 +692,12 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         driveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                cameraButton.setVisibility(View.VISIBLE);
+                //cameraButton.setVisibility(View.VISIBLE);
                 driveButton.setVisibility(View.INVISIBLE);
                 walkButton.setVisibility(View.VISIBLE);
                 naviMode = "driving";
                 drawRoute(curLatLng, latLng, naviMode);
                 updateToMapNavigationView();
-            }
-        });
-        cameraButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                Intent intent = new Intent();
-                intent.setClass(MapBasedViewActivity.this, CameraBasedViewActivity.class);
-                startActivityForResult(intent,REQUEST_CODE_CAMERA);
             }
         });
     }
