@@ -18,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -25,8 +26,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,6 +100,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     private PlaceAutoCompleteAdapter mAdapter;
     protected GoogleApiClient mGoogleApiClient;
 
+    private CardView cardviewbottom;
     private LinearLayout linearLayout;
     private ImageButton walkButton;
     private ImageButton driveButton;
@@ -503,8 +505,9 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
      */
     private void searchMap(){
         // Getting reference to btn_find of the layout activity_main
-        Button btn_find = (Button) findViewById(R.id.btn_find);
+        ImageView btn_find = (ImageView) findViewById(R.id.btn_find);
         final TextView locationInfo = (TextView)findViewById(R.id.location_info);
+        cardviewbottom = (CardView) findViewById(R.id.cardviewbottom);
         // Defining button click event listener for the find button
         View.OnClickListener findClickListener = new View.OnClickListener() {
             @Override
@@ -519,6 +522,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
                         (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputMethodManager.hideSoftInputFromWindow(etLocation.getWindowToken(), 0);
                 linearLayout.setVisibility(View.VISIBLE);
+                cardviewbottom.setVisibility(View.VISIBLE);
                 //after click search, we will display the mode buttons
                 initNavigationgMode();
                 //show destination information
