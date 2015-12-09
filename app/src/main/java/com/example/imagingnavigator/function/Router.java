@@ -33,8 +33,6 @@ public class Router {
 
     private static final int GEOPOTINT_VERSION = 1;
 
-    private static final String ROUTE_JSON_DATA = "routeJsonData";
-
     private final GoogleMap mMap;
     private final UpdateIntent updateIntent;
 
