@@ -14,7 +14,7 @@ public class Navigator {
 
     //Compute the dot product AB . AC
     // A->B stands for the segment, C stands for current location
-    static private double DotProduct(double[] pointA, double[] pointB, double[] pointC)
+    static private double dotProduct(double[] pointA, double[] pointB, double[] pointC)
     {
         double[] AB = new double[2];
         double[] BC = new double[2];
@@ -43,7 +43,7 @@ public class Navigator {
     }
 
     //Compute the distance from A to B
-    static double Distance(double[] pointA, double[] pointB)
+    static double distance(double[] pointA, double[] pointB)
     {
         double d1 = pointA[0] - pointB[0];
         double d2 = pointA[1] - pointB[1];
@@ -53,17 +53,17 @@ public class Navigator {
 
     //Compute the distance from AB to C
     // A->B stands for the segment, C stands for current location
-    static private double PointToSegmentDistance(double[] pointA, double[] pointB, double[] pointC)
+    static private double pointToSegmentDistance(double[] pointA, double[] pointB, double[] pointC)
     {
-        double dist = CrossProduct(pointA, pointB, pointC) / Distance(pointA, pointB);
+        double dist = CrossProduct(pointA, pointB, pointC) / distance(pointA, pointB);
 
-        double dot1 = DotProduct(pointA, pointB, pointC);
+        double dot1 = dotProduct(pointA, pointB, pointC);
         if (dot1 > 0)
-            return Distance(pointB, pointC);
+            return distance(pointB, pointC);
 
-        double dot2 = DotProduct(pointB, pointA, pointC);
+        double dot2 = dotProduct(pointB, pointA, pointC);
         if (dot2 > 0)
-            return Distance(pointA, pointC);
+            return distance(pointA, pointC);
 
         return Math.abs(dist);
     }
@@ -81,7 +81,7 @@ public class Navigator {
         for(int i = 1; i < path.size(); i++){
             // For each segement [path[i-1], path[i]], calculate distance from current position.
             // Keep recording the min distance, as well as the ending point of that segment.
-            dist = PointToSegmentDistance(path.get(i-1), path.get(i), curPosition);
+            dist = pointToSegmentDistance(path.get(i-1), path.get(i), curPosition);
             if(dist < min){
                 min = dist;
                 target = path.get(i);
@@ -90,6 +90,25 @@ public class Navigator {
 
         return target;
     }
+
+    static public Step getCurrentStep(List<Step> steps, double[] curPosition){
+        double min = Double.MAX_VALUE;
+        double dist;
+        Step result = steps.get(0);
+        Step cur;
+
+        for(int i = 0; i < steps.size(); i++){
+            cur = steps.get(i);
+            dist = pointToSegmentDistance(cur.getStart(), cur.getEnd(), curPosition);
+            if(dist < min){
+                min = dist;
+                result = cur;
+            }
+        }
+
+        return result;
+    }
+
 
     /*
      * This function will return the angle from given position to the target position
@@ -110,5 +129,21 @@ public class Navigator {
         // Convert the angle to be clockwise
         // Which is used by ImageView.rotate()
         return 360-angle;
+    }
+
+
+    static public int getETAInCurrentStep(Step step, double[] curLoc){
+        int duration = step.getDuration();
+        if(duration <= 60 ){
+            // for short step, do not calculate
+            return duration;
+        }
+
+        double percentage = distance(curLoc, step.getEnd()) /
+                distance(step.getStart(), step.getEnd());
+
+        int result = (int)(step.getDuration() * percentage);
+
+        return result;
     }
 }

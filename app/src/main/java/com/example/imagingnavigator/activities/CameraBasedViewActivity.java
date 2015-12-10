@@ -22,7 +22,12 @@ import android.widget.ImageView;
 
 import com.example.imagingnavigator.function.CameraView;
 import com.example.imagingnavigator.R;
+import com.example.imagingnavigator.function.DirectionsJSONParser;
 import com.example.imagingnavigator.function.Navigator;
+import com.example.imagingnavigator.function.Step;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +62,8 @@ public class CameraBasedViewActivity extends Activity {
     float value = 0;
 
     List<double[]> route;
+    String routeStr;
+
     double[] curPosition;
     double[] nextStep;
     double nextStepAngle;
@@ -100,12 +107,25 @@ public class CameraBasedViewActivity extends Activity {
 
         initLocProvider();
 
-        route = getRoute();
-
 
         Intent intent = getIntent();
-        String routeString = intent.getStringExtra(ROUTE_JSON_DATA);
-        Log.i(TAG, routeString + "");
+        routeStr = intent.getStringExtra(ROUTE_JSON_DATA);
+        Log.e(TAG, "=======onCreate::raw route string get from previous activity:" + routeStr + "=============");
+
+        route = getRoute(routeStr);
+
+        List<Step> steps = getSteps(routeStr);
+        double[] curLoc = {40.707247, -73.990728};
+        Step curStep = Navigator.getCurrentStep(steps, curLoc);
+        Log.e(TAG, "=========onCreate::cur step start from : [" + curStep.getStart()[0] + "," + curStep.getStart()[1] + "]==========");
+        Log.e(TAG, "=========onCreate:: with instruction: " + curStep.getInstruction() + "============");
+
+        int index = steps.indexOf(curStep);
+        Log.e(TAG, "=========onCreate::current step is the: " + index + " th step in the path============");
+
+        Log.e(TAG, "=========onCreate::current step's duration is: " + curStep.getDuration() + "============");
+        int eta = Navigator.getETAInCurrentStep(curStep, curLoc);
+        Log.e(TAG, "=========onCreate::current step's duration is: " + eta + "============");
 
     }
 
@@ -142,7 +162,7 @@ public class CameraBasedViewActivity extends Activity {
         Intent intent = new Intent();
         intent.setClass(this, MapBasedViewActivity.class);
         intent.putExtra("curLocation", curPosition);
-        setResult(Activity.RESULT_OK,intent);
+        setResult(Activity.RESULT_OK, intent);
         finish();
     }
 
@@ -190,11 +210,14 @@ public class CameraBasedViewActivity extends Activity {
     }
 
 
-    private List<double[]> getRoute(){
+    private List<double[]> getRoute(String routeString){
         List<double[]> route = new ArrayList<double[]>();
         // Simulate navigation from
         // https://maps.googleapis.com/maps/api/directions/json?origin=40.694533,%20-73.986865&
         //      destination=40.729846,%20-73.997482&sensor=false&mode=driving----
+
+        // This field is for test
+        List<List<double[]>> testRoute;
 
         route.add(new double[]{40.6945413, -73.98718579999999});
         route.add(new double[]{40.6960476,-73.9871132});
@@ -215,7 +238,43 @@ public class CameraBasedViewActivity extends Activity {
         route.add(new double[]{40.72699859999999,-73.9998762});
         route.add(new double[]{40.7298372,-73.9974637});
 
+        DirectionsJSONParser jsonParser = new DirectionsJSONParser();
+        try{
+            JSONObject jsonObj = new JSONObject(routeString);
+            testRoute = jsonParser.parse(jsonObj);
+
+            Log.e(TAG, "=============getRoute::The parsed path is as following========");
+            for(List<double[]> path: testRoute){
+                for(double[] point: path){
+                    Log.e(TAG, "=============[" + point[0] + "," + point[1] + "]========");
+                }
+            }
+        }catch(JSONException je){
+            je.printStackTrace();
+            return null;
+        }
+
+
         return route;
+    }
+
+    private List<Step> getSteps(String JSONStr){
+        List<Step> result = new ArrayList<Step>();
+
+        DirectionsJSONParser jsonParser = new DirectionsJSONParser();
+        try{
+            JSONObject jObj = new JSONObject(JSONStr);
+            result = jsonParser.parseForStep(jObj);
+            Log.e(TAG, "=============getSteps::The parsed step is as following========");
+            for(Step s: result){
+                Log.e(TAG, "==========[" + s.getStart()[0] + "," + s.getStart()[1] + "]==========");
+            }
+
+        }catch(JSONException je){
+            je.printStackTrace();
+            return null;
+        }
+        return result;
     }
 
     private double[] getCurPosition(){
