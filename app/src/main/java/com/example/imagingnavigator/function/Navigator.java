@@ -131,8 +131,11 @@ public class Navigator {
         return 360-angle;
     }
 
-
-    static public int getETAInCurrentStep(Step step, double[] curLoc){
+    /**
+     * This function will return remaining duration time for current step
+     * according to given current step and current location information.
+     * */
+    static public int getRemainingDuration(Step step, double[] curLoc){
         int duration = step.getDuration();
         if(duration <= 60 ){
             // for short step, do not calculate
@@ -145,5 +148,19 @@ public class Navigator {
         int result = (int)(step.getDuration() * percentage);
 
         return result;
+    }
+
+    /**
+     * This function will return the estimate time to arriving
+     * with given current step, current location
+     * */
+    static public int getETA(List<Step> steps, Step curStep, double[] curLoc){
+        int eta = getRemainingDuration(curStep, curLoc);
+
+        int index = steps.indexOf(curStep);
+        for(int i = index+1; i < steps.size(); i++){
+            eta += steps.get(i).getDuration();
+        }
+        return eta;
     }
 }
