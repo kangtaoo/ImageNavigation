@@ -123,9 +123,9 @@ public class CameraBasedViewActivity extends Activity {
         int index = steps.indexOf(curStep);
         Log.e(TAG, "=========onCreate::current step is the: " + index + " th step in the path============");
 
-        Log.e(TAG, "=========onCreate::current step's duration is: " + curStep.getDuration() + "============");
-        int eta = Navigator.getETAInCurrentStep(curStep, curLoc);
-        Log.e(TAG, "=========onCreate::current step's duration is: " + eta + "============");
+        Log.e(TAG, "=========onCreate::current step's total duration is: " + curStep.getDuration() + "============");
+        int eta = Navigator.getRemainingDuration(curStep, curLoc);
+        Log.e(TAG, "=========onCreate::current step's remaining duration is: " + eta + "============");
 
     }
 
@@ -211,40 +211,40 @@ public class CameraBasedViewActivity extends Activity {
 
 
     private List<double[]> getRoute(String routeString){
-        List<double[]> route = new ArrayList<double[]>();
+        List<List<double[]>> route;
         // Simulate navigation from
         // https://maps.googleapis.com/maps/api/directions/json?origin=40.694533,%20-73.986865&
         //      destination=40.729846,%20-73.997482&sensor=false&mode=driving----
 
         // This field is for test
-        List<List<double[]>> testRoute;
+//        List<List<double[]>> testRoute;
 
-        route.add(new double[]{40.6945413, -73.98718579999999});
-        route.add(new double[]{40.6960476,-73.9871132});
-        route.add(new double[]{40.6960476,-73.9871132});
-        route.add(new double[]{40.6959467,-73.9845715});
-        route.add(new double[]{40.6959467,-73.9845715});
-        route.add(new double[]{40.6971449,-73.9849648});
-        route.add(new double[]{40.6971449,-73.9849648});
-        route.add(new double[]{40.7154786,-73.99523050000001});
-        route.add(new double[]{40.7154786,-73.99523050000001});
-        route.add(new double[]{40.7159842,-73.99544139999999});
-        route.add(new double[]{40.7159842,-73.99544139999999});
-        route.add(new double[]{40.72026,-73.9940697});
-        route.add(new double[]{40.72026,-73.9940697});
-        route.add(new double[]{40.7240559,-73.99256249999999});
-        route.add(new double[]{40.7240559,-73.99256249999999});
-        route.add(new double[]{40.72699859999999,-73.9998762});
-        route.add(new double[]{40.72699859999999,-73.9998762});
-        route.add(new double[]{40.7298372,-73.9974637});
+//        route.add(new double[]{40.6945413, -73.98718579999999});
+//        route.add(new double[]{40.6960476,-73.9871132});
+//        route.add(new double[]{40.6960476,-73.9871132});
+//        route.add(new double[]{40.6959467,-73.9845715});
+//        route.add(new double[]{40.6959467,-73.9845715});
+//        route.add(new double[]{40.6971449,-73.9849648});
+//        route.add(new double[]{40.6971449,-73.9849648});
+//        route.add(new double[]{40.7154786,-73.99523050000001});
+//        route.add(new double[]{40.7154786,-73.99523050000001});
+//        route.add(new double[]{40.7159842,-73.99544139999999});
+//        route.add(new double[]{40.7159842,-73.99544139999999});
+//        route.add(new double[]{40.72026,-73.9940697});
+//        route.add(new double[]{40.72026,-73.9940697});
+//        route.add(new double[]{40.7240559,-73.99256249999999});
+//        route.add(new double[]{40.7240559,-73.99256249999999});
+//        route.add(new double[]{40.72699859999999,-73.9998762});
+//        route.add(new double[]{40.72699859999999,-73.9998762});
+//        route.add(new double[]{40.7298372,-73.9974637});
 
         DirectionsJSONParser jsonParser = new DirectionsJSONParser();
         try{
             JSONObject jsonObj = new JSONObject(routeString);
-            testRoute = jsonParser.parse(jsonObj);
+            route = jsonParser.parse(jsonObj);
 
             Log.e(TAG, "=============getRoute::The parsed path is as following========");
-            for(List<double[]> path: testRoute){
+            for(List<double[]> path: route){
                 for(double[] point: path){
                     Log.e(TAG, "=============[" + point[0] + "," + point[1] + "]========");
                 }
@@ -254,8 +254,7 @@ public class CameraBasedViewActivity extends Activity {
             return null;
         }
 
-
-        return route;
+        return route.get(0);
     }
 
     private List<Step> getSteps(String JSONStr){
