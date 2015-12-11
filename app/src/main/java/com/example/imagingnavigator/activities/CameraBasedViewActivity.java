@@ -19,11 +19,11 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.example.imagingnavigator.function.CameraView;
 import com.example.imagingnavigator.R;
+import com.example.imagingnavigator.function.CameraView;
 import com.example.imagingnavigator.function.DirectionsJSONParser;
 import com.example.imagingnavigator.function.NavigationInfo;
 import com.example.imagingnavigator.function.Navigator;
@@ -416,7 +416,13 @@ public class CameraBasedViewActivity extends Activity {
              * All information need to be shown on camera screen can get from result
              * Result is of NavigationInfo type
              * */
+            TextView camera_location_info = (TextView)findViewById(R.id.camera_location_info);
+            TextView location_duration = (TextView)findViewById(R.id.location_duration);
+            TextView camera_ETA = (TextView)findViewById(R.id.camera_ETA);
 
+            camera_location_info.setText(result.getInstruction());
+            location_duration.setText(String.valueOf(result.getDuaration()/60 +1)+" mins left");
+            camera_ETA.setText("Total time: " + String.valueOf(result.getETA()/60 +1) + " mins");
 //            ImageButton button = (ImageButton)findViewById(R.id.camera_based_view_showMapView);
 //            flag = !flag;
 //            if(flag){
