@@ -423,13 +423,6 @@ public class CameraBasedViewActivity extends Activity {
             camera_location_info.setText(result.getInstruction());
             location_duration.setText(String.valueOf(result.getDuaration()/60 +1)+" mins left");
             camera_ETA.setText("Total time: " + String.valueOf(result.getETA()/60 +1) + " mins");
-//            ImageButton button = (ImageButton)findViewById(R.id.camera_based_view_showMapView);
-//            flag = !flag;
-//            if(flag){
-//                button.setVisibility(View.VISIBLE);
-//            }else{
-//                button.setVisibility(View.INVISIBLE);
-//            }
         }
     }
 }

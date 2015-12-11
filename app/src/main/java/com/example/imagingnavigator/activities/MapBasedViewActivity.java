@@ -175,17 +175,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         //initialize search bar
         setAutoAdapter();
 
-
-//        double dLat = 43.0054446;
-//        double dLong = -87.9678884;
-//
-//        if(location!=null){
-//            //get the latitude
-//            dLat = location.getLatitude();
-//            //get the longitude
-//            dLong = location.getLongitude();
-//        }
-//        drawRoute(new LatLng(dLat, dLong), new LatLng(dLat + 20d, dLong - 20d), "driving");
     }
 
     @Override
@@ -276,13 +265,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
             }
         }
         }
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        //super.onCreateOptionsMenu(menu);
-//        getMenuInflater().inflate(R.menu.search_list_activity, menu);
-//        return true;
-//    }
 
 
     // An AsyncTask class for accessing the GeoCoding Web Service
@@ -492,10 +474,6 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
 
         location = locationManager.getLastKnownLocation(bestProvider);
 
-        /**
-         * TODO: Handle the exception when we close GPS service or close network
-         */
-
 
        // System.out.println("latitude:" + location.getLatitude() + ", longitude:" + location.getLongitude());
     }
@@ -624,14 +602,7 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     }
 
 
-//    /**
-//     * Start the map based router
-//     */
-//    private void startMapBasedRouter(){
-//        Intent intent = new Intent();
-//        intent.setClass(MapBasedViewActivity.this, MapBasedRouterActivity.class);
-//        startActivity(intent);
-//    }
+
 
     private void drawRoute(LatLng origin, LatLng dest, String mode) {
         Router router = new Router(mMap, new UpdateIntent(){
