@@ -624,14 +624,14 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     }
 
 
-    /**
-     * Start the map based router
-     */
-    private void startMapBasedRouter(){
-        Intent intent = new Intent();
-        intent.setClass(MapBasedViewActivity.this, MapBasedRouterActivity.class);
-        startActivity(intent);
-    }
+//    /**
+//     * Start the map based router
+//     */
+//    private void startMapBasedRouter(){
+//        Intent intent = new Intent();
+//        intent.setClass(MapBasedViewActivity.this, MapBasedRouterActivity.class);
+//        startActivity(intent);
+//    }
 
     private void drawRoute(LatLng origin, LatLng dest, String mode) {
         Router router = new Router(mMap, new UpdateIntent(){
@@ -652,13 +652,13 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
         router.drawRoute(origin, dest, mode);
     }
 
-    /**
-     * Callback function for on-click router button
-     * Will open map based router
-     * */
-    public void onClickRouter(View view){
-        startMapBasedRouter();
-    }
+//    /**
+//     * Callback function for on-click router button
+//     * Will open map based router
+//     * */
+//    public void onClickRouter(View view){
+//        startMapBasedRouter();
+//    }
 
     @Override
     public void onConnected(Bundle bundle) {
