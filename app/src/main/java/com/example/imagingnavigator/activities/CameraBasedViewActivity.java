@@ -13,16 +13,19 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.example.imagingnavigator.function.CameraView;
 import com.example.imagingnavigator.R;
 import com.example.imagingnavigator.function.DirectionsJSONParser;
+import com.example.imagingnavigator.function.NavigationInfo;
 import com.example.imagingnavigator.function.Navigator;
 import com.example.imagingnavigator.function.Step;
 import com.example.imagingnavigator.function.StringAnalyzer;
@@ -79,6 +82,7 @@ public class CameraBasedViewActivity extends Activity {
     List<Step> steps;
 
     Timer showNaviInfoTimer;
+    boolean flag;
 
 
     @Override
@@ -365,15 +369,14 @@ public class CameraBasedViewActivity extends Activity {
         });
     }
 
-    public void getNavigationInfo(List<Step> steps){
+    public NavigationInfo getNavigationInfo(List<Step> steps){
         double[] curLoc = getCurPosition();
         Log.e(TAG, "=============getNavigationInfo::current location is: [" +
                 curLoc[0] + "," + curLoc[1] + "===============");
 
         Step curStep = Navigator.getCurrentStep(steps, curLoc);
 
-        int index = steps.indexOf(curStep);
-        Log.e(TAG, "=============getNavigationInfo::Current step is: " + index + " th step in step list ===============");
+
 
         int duration = Navigator.getRemainingDuration(curStep, curLoc);
         Log.e(TAG, "=============getNavigationInfo::time remaining for current step is: " + (duration/60 + 1) + " mins ===============");
@@ -383,14 +386,44 @@ public class CameraBasedViewActivity extends Activity {
 
         StringAnalyzer analyzer = new StringAnalyzer();
 
-        String instruction = analyzer.decode(analyzer.decode(curStep.getInstruction()));
+        String instruction = analyzer.delHTMLTag(analyzer.decode(curStep.getInstruction()));
         Log.e(TAG, "=============getNavigationInfo::current instruction: [" + instruction + "]===============");
+
+
+
+        return new NavigationInfo(duration, instruction, eta);
+
     }
 
     private class ShowNaviInfoTimerTask extends TimerTask {
         @Override
         public void run(){
-            getNavigationInfo(steps);
+            new ShowNaviInfoAsyncTask().execute(steps);
+//            getNavigationInfo(steps);
+        }
+    }
+
+    private class ShowNaviInfoAsyncTask extends AsyncTask<List<Step>, Void, NavigationInfo> {
+        @Override
+        protected NavigationInfo doInBackground(List<Step>... steps){
+            return getNavigationInfo(steps[0]);
+        }
+
+        @Override
+        protected void onPostExecute(NavigationInfo result){
+
+            /**
+             * All information need to be shown on camera screen can get from result
+             * Result is of NavigationInfo type
+             * */
+
+//            ImageButton button = (ImageButton)findViewById(R.id.camera_based_view_showMapView);
+//            flag = !flag;
+//            if(flag){
+//                button.setVisibility(View.VISIBLE);
+//            }else{
+//                button.setVisibility(View.INVISIBLE);
+//            }
         }
     }
 }
