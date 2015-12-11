@@ -35,6 +35,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
             this.camera.startPreview();
         }catch(IOException e){
             e.printStackTrace();
+            this.camera.stopPreview();
+            this.camera.release();
         }
     }
 
@@ -59,6 +61,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
             this.camera.startPreview();
         }catch(IOException e){
             e.printStackTrace();
+            this.camera.stopPreview();
+            this.camera.release();
         }
     }
 

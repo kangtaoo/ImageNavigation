@@ -25,12 +25,15 @@ import com.example.imagingnavigator.R;
 import com.example.imagingnavigator.function.DirectionsJSONParser;
 import com.example.imagingnavigator.function.Navigator;
 import com.example.imagingnavigator.function.Step;
+import com.example.imagingnavigator.function.StringAnalyzer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by zhangxi on 10/23/15.
@@ -73,6 +76,9 @@ public class CameraBasedViewActivity extends Activity {
     Location curLocation;
 
     double curOrientation;
+    List<Step> steps;
+
+    Timer showNaviInfoTimer;
 
 
     @Override
@@ -114,7 +120,7 @@ public class CameraBasedViewActivity extends Activity {
 
         route = getRoute(routeStr);
 
-        List<Step> steps = getSteps(routeStr);
+        steps = getSteps(routeStr);
         double[] curLoc = {40.707247, -73.990728};
         Step curStep = Navigator.getCurrentStep(steps, curLoc);
         Log.e(TAG, "=========onCreate::cur step start from : [" + curStep.getStart()[0] + "," + curStep.getStart()[1] + "]==========");
@@ -127,12 +133,23 @@ public class CameraBasedViewActivity extends Activity {
         int eta = Navigator.getRemainingDuration(curStep, curLoc);
         Log.e(TAG, "=========onCreate::current step's remaining duration is: " + eta + "============");
 
+        showNaviInfoTimer = new Timer();
+        // Show navigation information periodically
+        showNaviInfoTimer.schedule(new ShowNaviInfoTimerTask(), 0, 5*1000);
     }
 
     @Override
     public void onPause(){
         sm.unregisterListener(myListener);
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(showNaviInfoTimer != null){
+            showNaviInfoTimer.cancel();
+        }
     }
 
     /**
@@ -346,5 +363,34 @@ public class CameraBasedViewActivity extends Activity {
 
             }
         });
+    }
+
+    public void getNavigationInfo(List<Step> steps){
+        double[] curLoc = getCurPosition();
+        Log.e(TAG, "=============getNavigationInfo::current location is: [" +
+                curLoc[0] + "," + curLoc[1] + "===============");
+
+        Step curStep = Navigator.getCurrentStep(steps, curLoc);
+
+        int index = steps.indexOf(curStep);
+        Log.e(TAG, "=============getNavigationInfo::Current step is: " + index + " th step in step list ===============");
+
+        int duration = Navigator.getRemainingDuration(curStep, curLoc);
+        Log.e(TAG, "=============getNavigationInfo::time remaining for current step is: " + (duration/60 + 1) + " mins ===============");
+
+        int eta = Navigator.getETA(steps, curStep, curLoc);
+        Log.e(TAG, "=============getNavigationInfo::will get to the destination in: " + (eta / 60 + 1) + " mins ===============");
+
+        StringAnalyzer analyzer = new StringAnalyzer();
+
+        String instruction = analyzer.decode(analyzer.decode(curStep.getInstruction()));
+        Log.e(TAG, "=============getNavigationInfo::current instruction: [" + instruction + "]===============");
+    }
+
+    private class ShowNaviInfoTimerTask extends TimerTask {
+        @Override
+        public void run(){
+            getNavigationInfo(steps);
+        }
     }
 }
