@@ -69,8 +69,6 @@
         </activity>
         <activity android:name="com.example.imagingnavigator.activities.CameraBasedViewActivity" >
         </activity>
-        <activity android:name="com.example.imagingnavigator.activities.MapBasedRouterActivity" >
-        </activity>
     </application>
 
 </manifest>
