@@ -206,20 +206,27 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO - fill in here
-        Log.e("--------getReturn:","before");
+        Log.e("--------getReturn:", "before");
         if (data!=null){
             switch (requestCode){
                 case REQUEST_CODE_CAMERA:
 
                     curPosition = data.getExtras().getDoubleArray("curLocation");
-                    Log.e("--------getReturn:===:",String.valueOf(curPosition[0]));
-                    getReturnStatus();
+                    Log.e("--------getReturn:===:", String.valueOf(curPosition[0]));
+                    boolean isArrival = data.getExtras().getBoolean("isArrival");
+                    if(!isArrival){
+                        getReturnStatus();
+                    }else{
+                        clearMap();
+                    }
+
                     break;
 
             }
         }
     }
 
+    //when we jump from camera to map, we will get the previous operation info
     private void getReturnStatus(){
         naviMode = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(this.NAVIGATION_MODE, null);
@@ -265,6 +272,17 @@ public class MapBasedViewActivity extends FragmentActivity implements GoogleApiC
             }
         }
         }
+
+    //if we arrived the destination, we will initialize the map
+    private void clearMap(){
+        walkButton = (ImageButton) findViewById(R.id.walk_mode);
+        driveButton = (ImageButton) findViewById(R.id.drive_mode);
+        cameraButton = (ImageButton) findViewById(R.id.btn_camera);
+        cameraButton.setVisibility(View.INVISIBLE);
+        driveButton.setVisibility(View.INVISIBLE);
+        walkButton.setVisibility(View.INVISIBLE);
+        mMap.clear();
+    }
 
 
     // An AsyncTask class for accessing the GeoCoding Web Service

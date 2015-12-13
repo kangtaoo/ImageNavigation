@@ -13,14 +13,12 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -87,7 +85,7 @@ public class CameraBasedViewActivity extends Activity {
     List<Step> steps;
 
     Timer showNaviInfoTimer;
-    boolean flag;
+    boolean isArrival = false;
 
 
     @Override
@@ -192,6 +190,7 @@ public class CameraBasedViewActivity extends Activity {
         Intent intent = new Intent();
         intent.setClass(this, MapBasedViewActivity.class);
         intent.putExtra("curLocation", curPosition);
+        intent.putExtra("isArrival",isArrival);
         setResult(Activity.RESULT_OK, intent);
         finish();
     }
@@ -446,6 +445,7 @@ public class CameraBasedViewActivity extends Activity {
 
                 location_duration.setText("0 mins last");
                 camera_ETA.setText("Total time: 0 mins");
+                isArrival = true;
             }else{
                 location_duration.setText(String.valueOf(result.getDuaration()/60 +1)+" mins last");
                 camera_ETA.setText("Total time: " + String.valueOf(result.getETA()/60 +1) + " mins");
