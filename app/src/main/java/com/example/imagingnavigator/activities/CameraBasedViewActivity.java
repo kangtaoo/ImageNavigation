@@ -13,12 +13,14 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,6 +29,7 @@ import com.example.imagingnavigator.function.CameraView;
 import com.example.imagingnavigator.function.DirectionsJSONParser;
 import com.example.imagingnavigator.function.NavigationInfo;
 import com.example.imagingnavigator.function.Navigator;
+import com.example.imagingnavigator.function.OnRouteCheck;
 import com.example.imagingnavigator.function.Step;
 import com.example.imagingnavigator.function.StringAnalyzer;
 
@@ -67,12 +70,14 @@ public class CameraBasedViewActivity extends Activity {
 
     float value = 0;
 
-    List<double[]> route;
-    String routeStr;
+    private List<double[]> route;
+    private String routeStr;
 
-    double[] curPosition;
-    double[] nextStep;
-    double nextStepAngle;
+    private double[] curPosition;
+    private double[] nextStep;
+    private double nextStepAngle;
+
+    private OnRouteCheck checker;
 
     LocationManager locationManager;
     String locProvider;
@@ -125,6 +130,10 @@ public class CameraBasedViewActivity extends Activity {
         route = getRoute(routeStr);
 
         steps = getSteps(routeStr);
+
+        // Will be used to check whether user arrived at
+        checker = new OnRouteCheck();
+
         double[] curLoc = {40.707247, -73.990728};
         Step curStep = Navigator.getCurrentStep(steps, curLoc);
         Log.e(TAG, "=========onCreate::cur step start from : [" + curStep.getStart()[0] + "," + curStep.getStart()[1] + "]==========");
@@ -374,6 +383,10 @@ public class CameraBasedViewActivity extends Activity {
         Log.e(TAG, "=============getNavigationInfo::current location is: [" +
                 curLoc[0] + "," + curLoc[1] + "===============");
 
+        if(checker.arrivePoint(curLoc, steps.get(steps.size()-1).getEnd())){
+            return new NavigationInfo(0, "Congratulations, destination arrived!!!", 0);
+        }
+
         Step curStep = Navigator.getCurrentStep(steps, curLoc);
 
 
@@ -410,19 +423,32 @@ public class CameraBasedViewActivity extends Activity {
         }
 
         @Override
-        protected void onPostExecute(NavigationInfo result){
+        protected void onPostExecute(NavigationInfo result) {
 
             /**
              * All information need to be shown on camera screen can get from result
              * Result is of NavigationInfo type
              * */
-            TextView camera_location_info = (TextView)findViewById(R.id.camera_location_info);
-            TextView location_duration = (TextView)findViewById(R.id.location_duration);
-            TextView camera_ETA = (TextView)findViewById(R.id.camera_ETA);
+            TextView camera_location_info = (TextView) findViewById(R.id.camera_location_info);
+            TextView location_duration = (TextView) findViewById(R.id.location_duration);
+            TextView camera_ETA = (TextView) findViewById(R.id.camera_ETA);
 
             camera_location_info.setText(result.getInstruction());
-            location_duration.setText(String.valueOf(result.getDuaration()/60 +1)+" mins left");
-            camera_ETA.setText("Total time: " + String.valueOf(result.getETA()/60 +1) + " mins");
+            location_duration.setText(String.valueOf(result.getDuaration() / 60 + 1) + " mins left");
+            camera_ETA.setText("Total time: " + String.valueOf(result.getETA() / 60 + 1) + " mins");
+
+            // arrive destination
+            // cancel listener
+            if (result.getETA() == 0) {
+                sm.unregisterListener(myListener);
+                // set arrow to be un-visible
+                ImageView arrow = (ImageView)findViewById(R.id.camera_based_vew_navigation_arrow);
+                arrow.setVisibility(View.INVISIBLE);
+                showNaviInfoTimer.cancel();
+
+                location_duration.setText("0 mins left");
+                camera_ETA.setText("Total time:0 mins");
+            }
         }
     }
 }
