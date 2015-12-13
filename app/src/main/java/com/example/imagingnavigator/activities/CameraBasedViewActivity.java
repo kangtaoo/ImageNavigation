@@ -117,7 +117,7 @@ public class CameraBasedViewActivity extends Activity {
 
         sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
         sm.registerListener(myListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        //更新显示数据的方法
+        //update displaying data method
         curOrientation = calculateOrientation();
 
         initLocProvider();
@@ -434,8 +434,6 @@ public class CameraBasedViewActivity extends Activity {
             TextView camera_ETA = (TextView) findViewById(R.id.camera_ETA);
 
             camera_location_info.setText(result.getInstruction());
-            location_duration.setText(String.valueOf(result.getDuaration() / 60 + 1) + " mins left");
-            camera_ETA.setText("Total time: " + String.valueOf(result.getETA() / 60 + 1) + " mins");
 
             // arrive destination
             // cancel listener
@@ -446,8 +444,11 @@ public class CameraBasedViewActivity extends Activity {
                 arrow.setVisibility(View.INVISIBLE);
                 showNaviInfoTimer.cancel();
 
-                location_duration.setText("0 mins left");
-                camera_ETA.setText("Total time:0 mins");
+                location_duration.setText("0 mins last");
+                camera_ETA.setText("Total time: 0 mins");
+            }else{
+                location_duration.setText(String.valueOf(result.getDuaration()/60 +1)+" mins last");
+                camera_ETA.setText("Total time: " + String.valueOf(result.getETA()/60 +1) + " mins");
             }
         }
     }
