@@ -1,4 +1,7 @@
 package com.example.imagingnavigator.function;
+import android.location.Location;
+import android.util.Log;
+
 import java.util.*;
 
 /**
@@ -118,17 +121,20 @@ public class Navigator {
         // Get angle from current position to target position
         // Based on the orientation of x axis
         // It's anticlockwise
-        double angle = (double) Math.toDegrees(Math.atan2(
-                target[1] - cur[1], target[0] - cur[0]));
+        Location curLoc = new Location("");
+        curLoc.setLatitude(cur[0]);
+        curLoc.setLongitude(cur[1]);
 
-        // Convert the angle from x axis based to north based (y axis based)
-        // Still anticolckwise
-        angle -= 90.0D;
-        angle = angle<0 ? 360+angle : angle;
+        Location destLoc = new Location("");
+        destLoc.setLatitude(target[0]);
+        destLoc.setLongitude(target[1]);
 
-        // Convert the angle to be clockwise
-        // Which is used by ImageView.rotate()
-        return 360-angle;
+        double angle = curLoc.bearingTo(destLoc);
+//        Log.e(TAG, ">>>>>>>getTargetAngle::Current location is: " + curLoc.getLatitude() + " "  + curLoc.getLongitude() + "<<<<<<<<<<");
+//        Log.e(TAG, ">>>>>>>getTargetAngle::Destination location is: " + destLoc.getLatitude() + " "  + destLoc.getLongitude() + "<<<<<<<<<<");
+//        Log.e(TAG, ">>>>>>>getTargetAngle::The distance is: " + curLoc.distanceTo(destLoc) + "<<<<<<<<<<<<");
+//        Log.e(TAG, ">>>>>>>getTargetAngle::The angle is: " + angle + "<<<<<<<<<<");
+        return angle;
     }
 
     /**
