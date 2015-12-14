@@ -15,6 +15,7 @@ import java.util.*;
 public class Navigator {
     private static final String TAG = Navigator.class.getSimpleName();
     private static final int ERROR_ALLOWED = 10;
+    private static final double EARTH_RADIUS = 6378137.0;
 
     //Compute the dot product AB . AC
     // A->B stands for the segment, C stands for current location
@@ -85,52 +86,57 @@ public class Navigator {
      */
     static public double[] getTargetPoint(List<double[]> path,
                                    double[] curPosition){
-//        double min = Double.MAX_VALUE;
-//        double dist;
-//        double[] target = path.get(0);
-//        for(int i = 1; i < path.size(); i++){
-//            // For each segement [path[i-1], path[i]], calculate distance from current position.
-//            // Keep recording the min distance, as well as the ending point of that segment.
-//            dist = pointToSegmentDistance(path.get(i-1), path.get(i), curPosition);
-//            if(dist < min){
-//                min = dist;
-//                target = path.get(i);
-//            }
-//        }
-//        return target;
-
-        if(arrived(curPosition, path.get(0))){
-            if(path.size() > 1){
-                path.remove(0);
-
+        double min = Double.MAX_VALUE;
+        double dist;
+        double[] target = path.get(0);
+        for(int i = 1; i < path.size(); i++){
+            // For each segement [path[i-1], path[i]], calculate distance from current position.
+            // Keep recording the min distance, as well as the ending point of that segment.
+            dist = crossTrackDistance(path.get(i - 1), path.get(i), curPosition);
+            if(dist < min){
+                min = dist;
+                target = path.get(i);
             }
         }
-        return path.get(0);
+        return target;
+
+//        if(arrived(curPosition, path.get(0))){
+//            if(path.size() > 1){
+//                path.remove(0);
+//
+//            }
+//        }
+//        return path.get(0);
     }
 
     static public Step getCurrentStep(List<Step> steps, double[] curPosition){
-//        double min = Double.MAX_VALUE;
-//        double dist;
-//        Step result = steps.get(0);
-//        Step cur;
-//
-//        for(int i = 0; i < steps.size(); i++){
-//            cur = steps.get(i);
-//            dist = pointToSegmentDistance(cur.getStart(), cur.getEnd(), curPosition);
-//            if(dist < min){
-//                min = dist;
-//                result = cur;
-//            }
-//        }
-//
-//        return result;
+        double min = Double.MAX_VALUE;
+        double dist;
+        Step result = steps.get(0);
+        Step cur;
 
-        if(arrived(curPosition, steps.get(0).getEnd())){
-            if(steps.size() > 1){
-                steps.remove(0);
+        for(int i = 0; i < steps.size(); i++){
+            cur = steps.get(i);
+            dist = crossTrackDistance(cur.getStart(), cur.getEnd(), curPosition);
+            Log.e(TAG, "~~~~~getCurrentStep::distance to " + (i+1) + " th step is: "
+                + dist + "~~~~~~~~");
+            if(dist < min){
+                min = dist;
+                result = cur;
             }
         }
-        return steps.get(0);
+
+        Log.e(TAG, "=========getCurrentStep::current step is the " + (steps.indexOf(result)+1)
+            + " th step out of " + steps.size() + "==========");
+
+        return result;
+
+//        if(arrived(curPosition, steps.get(0).getEnd())){
+//            if(steps.size() > 1){
+//                steps.remove(0);
+//            }
+//        }
+//        return steps.get(0);
     }
 
 
@@ -193,5 +199,28 @@ public class Navigator {
 
     static public boolean arrived(double[] cur, double[] dest){
         return distance(cur, dest) <= ERROR_ALLOWED;
+    }
+
+    // calculate angular distance by d/R
+    static private double angularDistance(
+            double[] pointA, double[] pointB){
+
+        return distance(pointA, pointB)/EARTH_RADIUS;
+    }
+
+    static public double crossTrackDistance(
+            double[] start, double[] end, double[] third){
+        // angular distance from start to third
+        double d13 = angularDistance(start, third);
+        // bearing from start to third
+        double b13 = getTargetAngle(start, third);
+        // bearing from start to end
+        double b12 = getTargetAngle(start, end);
+
+        double distance = Math.abs(Math.asin(
+                Math.sin(d13)*Math.sin(b13-b12)
+        )*EARTH_RADIUS);
+
+        return distance;
     }
 }
